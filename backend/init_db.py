@@ -73,6 +73,51 @@ def criar_tabelas():
     except Exception as erro:
         print(f"Falha critica ao tentar criar as tabelas: {erro}")
 
+import bcrypt
+from database import SessaoLocal
+
+def seed_dados_iniciais():
+    """
+    Injeta a Organização Sigma Core e o SuperAdmin primário no banco.
+    """
+    print("Executando o Seeding (Injeção) de Dados Iniciais...")
+    db = SessaoLocal()
+    try:
+        # Verifica se o Sigma Core já existe
+        sigma_core = db.query(Organizacao).filter(Organizacao.nome == "Sigma Core SaaS").first()
+        if not sigma_core:
+            sigma_core = Organizacao(
+                tipo="SIGMA_CORE",
+                nome="Sigma Core SaaS",
+                dados_especificos={"descricao": "Organização Raiz do Sistema para custos sistêmicos"}
+            )
+            db.add(sigma_core)
+            db.flush() # Para pegar o ID gerado antes do commit final
+
+        # Verifica se o superadmin já existe
+        email_admin = "sistema@e-sigma.app"
+        superadmin = db.query(Pessoa).filter(Pessoa.email == email_admin).first()
+        if not superadmin:
+            # Gerando hash usando bcrypt nativo para evitar bugs do passlib
+            senha_bruta = b"Cd@SadSig#0326"
+            senha_hasheada = bcrypt.hashpw(senha_bruta, bcrypt.gensalt()).decode('utf-8')
+            
+            superadmin = Pessoa(
+                tipo="SUPERADMIN",
+                nome_completo="Administrador de Sistemas",
+                email=email_admin,
+                senha_hash=senha_hasheada,
+                dados_civis={"permissoes_sistema": ["super_admin"]}
+            )
+            db.add(superadmin)
+            
+        db.commit()
+        print("Seeding concluído! Organização Raiz e SuperAdmin garantidos.")
+    except Exception as erro:
+        db.rollback()
+        print(f"Erro no Seeding: {erro}")
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     print("="*40)
@@ -81,5 +126,7 @@ if __name__ == "__main__":
     criar_banco_de_dados()
     print("-" * 40)
     criar_tabelas()
+    print("-" * 40)
+    seed_dados_iniciais()
     print("="*40)
     print("Processo de inicialização concluído.")

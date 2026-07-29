@@ -7,6 +7,7 @@ import { PaginaLogin } from './modulos/saas/PaginaLogin';
 import { DashboardGlobal } from './modulos/painel_global/DashboardGlobal';
 import { DashboardCentral } from './modulos/painel_central/DashboardCentral';
 import { DashboardLocal } from './modulos/painel_local/DashboardLocal';
+import { RotaPrivada } from './compartilhado/contextos/RotaPrivada';
 
 /**
  * Roteador Principal da Aplicação Sigma 2.0.
@@ -22,10 +23,22 @@ export const Roteador: React.FC = () => {
         {/* Rota de Autenticação Única */}
         <Route path="/login" element={<PaginaLogin />} />
         
-        {/* Fatias Verticais (Dashboards Multi-Tenant) */}
-        <Route path="/global" element={<DashboardGlobal />} />
-        <Route path="/central" element={<DashboardCentral />} />
-        <Route path="/local" element={<DashboardLocal />} />
+        {/* Fatias Verticais (Dashboards Multi-Tenant protegidos) */}
+        <Route path="/global" element={
+          <RotaPrivada allowedRoles={['super_admin']}>
+            <DashboardGlobal />
+          </RotaPrivada>
+        } />
+        <Route path="/central" element={
+          <RotaPrivada allowedRoles={['super_admin', 'webmaster']}>
+            <DashboardCentral />
+          </RotaPrivada>
+        } />
+        <Route path="/local" element={
+          <RotaPrivada allowedRoles={['super_admin', 'webmaster', 'member']}>
+            <DashboardLocal />
+          </RotaPrivada>
+        } />
         
         {/* Fallback para rotas inexistentes (404) */}
         <Route path="*" element={

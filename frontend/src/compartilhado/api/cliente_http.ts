@@ -4,7 +4,7 @@ import axios from 'axios';
  * Cliente HTTP Global (Axios) para a Aplicação.
  * Centraliza as requisições para a API do Sigma 2.0 (FastAPI).
  */
-const clienteHttp = axios.create({
+export const api = axios.create({
   baseURL: 'http://localhost:8000/api/v1',
   timeout: 10000,
   headers: {
@@ -12,11 +12,13 @@ const clienteHttp = axios.create({
   },
 });
 
-// Interceptor de Requisição (Útil para injetar Tokens JWT futuramente)
-clienteHttp.interceptors.request.use(
+// Interceptor de Requisição para injetar Tokens JWT
+api.interceptors.request.use(
   (config) => {
-    // Exemplo: const token = localStorage.getItem('token');
-    // if (token) config.headers.Authorization = `Bearer ${token}`;
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (erro) => {
@@ -24,18 +26,18 @@ clienteHttp.interceptors.request.use(
   }
 );
 
-// Interceptor de Resposta (Útil para capturar 401 Unauthorized globalmente)
-clienteHttp.interceptors.response.use(
+// Interceptor de Resposta para capturar 401 Unauthorized globalmente
+api.interceptors.response.use(
   (resposta) => {
     return resposta;
   },
   (erro) => {
     if (erro.response && erro.response.status === 401) {
-      console.warn("Acesso negado. Usuário deve ser deslogado.");
-      // Lógica de logout automático entraria aqui
+      console.warn("Acesso negado (401). Disparando force_logout.");
+      window.dispatchEvent(new Event('force_logout'));
     }
     return Promise.reject(erro);
   }
 );
 
-export default clienteHttp;
+export default api;

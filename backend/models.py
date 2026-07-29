@@ -44,14 +44,16 @@ class Organizacao(Base):
     __tablename__ = 'organizacoes'
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    tipo = Column(String(50), nullable=False) 
+    tipo = Column(String(50), nullable=False) # 'LOJA', 'OBEDIENCIA', 'SUBOBEDIENCIA', 'SIGMA_CORE'
     
     # Autorreferência para criar a hierarquia (ex: Loja aponta para Subobediência, que aponta para Obediência)
     organizacao_superior_id = Column(UUID(as_uuid=True), ForeignKey('organizacoes.id'), nullable=True)
     organizacao_superior = relationship('Organizacao', remote_side=[id], backref='organizacoes_subordinadas')
     
     nome = Column(String(255), nullable=False)
+    sigla = Column(String(50), nullable=True) # Ex: GOB, GLEG, GOB-GO
     cnpj = Column(String(18), unique=True, nullable=True)
+    cliente_ativo_sigma = Column(Boolean, default=False) # True = Assinante; False = Loja Espelho (apenas referência)
     dados_especificos = Column(JSONB, default=dict)
     criado_em = Column(DateTime(timezone=True), server_default=func.now())
     
@@ -68,12 +70,20 @@ class Organizacao(Base):
         self.dados_especificos['rito'] = valor
 
     @property
-    def esfera(self):
-        return self.dados_especificos.get('esfera')
+    def termo_relacionamento_superior(self):
+        return self.dados_especificos.get('termo_relacionamento_superior') # Ex: "Federada a", "Confederada a"
 
-    @esfera.setter
-    def esfera(self, valor):
-        self.dados_especificos['esfera'] = valor
+    @termo_relacionamento_superior.setter
+    def termo_relacionamento_superior(self, valor):
+        self.dados_especificos['termo_relacionamento_superior'] = valor
+
+    @property
+    def termo_relacionamento_regional(self):
+        return self.dados_especificos.get('termo_relacionamento_regional') # Ex: "Jurisdicionada a"
+
+    @termo_relacionamento_regional.setter
+    def termo_relacionamento_regional(self, valor):
+        self.dados_especificos['termo_relacionamento_regional'] = valor
 
 
 class Pessoa(Base):
@@ -396,5 +406,69 @@ class AcervoBiblioteca(Base):
     fila_reservas = Column(JSONB, default=list)
     
     organizacao = relationship("Organizacao")
+    
+    criado_em = Column(DateTime(timezone=True), server_default=func.now())
+
+# =============================================================================
+# MÓDULO DE TRATADOS DE AMIZADE E SAAS (CORE)
+# =============================================================================
+
+class TratadoAmizade(Base):
+    """
+    Tabela que gerencia os Tratados de Amizade e Mútuo Reconhecimento entre Obediências.
+    Essencial para permitir a intervisitação de membros entre lojas de obediências diferentes.
+    """
+    __tablename__ = 'tratados_amizade'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    obediencia_1_id = Column(UUID(as_uuid=True), ForeignKey('organizacoes.id'), nullable=False, index=True)
+    obediencia_2_id = Column(UUID(as_uuid=True), ForeignKey('organizacoes.id'), nullable=False, index=True)
+    
+    ativo = Column(Boolean, default=True)
+    data_assinatura = Column(Date, nullable=True)
+    
+    # Relações
+    obediencia_1 = relationship("Organizacao", foreign_keys=[obediencia_1_id])
+    obediencia_2 = relationship("Organizacao", foreign_keys=[obediencia_2_id])
+    
+    criado_em = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class PlanoSaaS(Base):
+    """
+    Catálogo de Planos de Assinatura do Sigma.
+    """
+    __tablename__ = 'planos_saas'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    nome = Column(String(100), nullable=False)
+    descricao = Column(String(255), nullable=True)
+    valor_mensal = Column(Numeric(10, 2), nullable=False)
+    limite_membros = Column(Integer, nullable=True) # None = Ilimitado
+    
+    ativo = Column(Boolean, default=True)
+    criado_em = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class AssinaturaSaaS(Base):
+    """
+    Contrato ativo de assinatura de uma Loja (Organização) com o Sigma.
+    Controla o acesso aos recursos e a geração da estrutura de pastas.
+    """
+    __tablename__ = 'assinaturas_saas'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organizacao_id = Column(UUID(as_uuid=True), ForeignKey('organizacoes.id'), nullable=False, index=True, unique=True)
+    plano_id = Column(UUID(as_uuid=True), ForeignKey('planos_saas.id'), nullable=False)
+    
+    status = Column(String(50), default='ATIVA') # ATIVA, INADIMPLENTE, CANCELADA, TRIAL
+    data_inicio = Column(Date, nullable=False, default=func.current_date())
+    data_vencimento = Column(Date, nullable=False)
+    
+    # Controla o Lazy Creation: se as pastas físicas já foram provisionadas no servidor
+    pastas_provisionadas = Column(Boolean, default=False) 
+    
+    organizacao = relationship("Organizacao")
+    plano = relationship("PlanoSaaS")
     
     criado_em = Column(DateTime(timezone=True), server_default=func.now())

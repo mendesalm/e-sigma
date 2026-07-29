@@ -3,8 +3,14 @@ import { createRoot } from 'react-dom/client'
 import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import temaMui from './compartilhado/tema/tema_mui'
+import { SnackbarProvider } from 'notistack'
+import { AuthProvider } from './compartilhado/contextos/AuthContext'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { Roteador } from './Roteador'
 import './index.css'
+
+// Criação do client ID a partir do ambiente (.env), com fallback de segurança visual se ausente
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'COLOQUE_SEU_CLIENT_ID_AQUI';
 
 /**
  * Ponto de entrada (Entrypoint) do Frontend React.
@@ -12,11 +18,15 @@ import './index.css'
  */
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {/* ThemeProvider aplica a paleta de cores e tipografia da V1 em toda a aplicação */}
     <ThemeProvider theme={temaMui}>
-      {/* CssBaseline injeta resets CSS nativos do Material UI, garantindo consistência */}
       <CssBaseline />
-      <Roteador />
+      <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+          <AuthProvider>
+            <Roteador />
+          </AuthProvider>
+        </GoogleOAuthProvider>
+      </SnackbarProvider>
     </ThemeProvider>
   </StrictMode>,
 )

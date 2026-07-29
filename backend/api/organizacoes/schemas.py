@@ -25,6 +25,17 @@ class OrganizacaoBase(BaseModel):
         description="Tipo da organização: 'OBEDIENCIA', 'SUBOBEDIENCIA' ou 'LOJA'.", 
         example="OBEDIENCIA"
     )
+
+    sigla: Optional[str] = Field(
+        None,
+        description="Sigla da organização (ex: GOB, GLEG).",
+        example="GOB"
+    )
+    
+    cliente_ativo_sigma: bool = Field(
+        False,
+        description="Se a organização é uma assinante ativa do Sigma ou apenas um espelho para intervisitação."
+    )
     
     cnpj: Optional[str] = Field(
         None, 
@@ -46,6 +57,17 @@ class OrganizacaoBase(BaseModel):
 class OrganizacaoCreate(OrganizacaoBase):
     """Schema utilizado no corpo da requisição (POST) para criar uma Organização."""
     pass
+
+
+class OrganizacaoUpdate(BaseModel):
+    """Schema utilizado no corpo da requisição (PATCH) para atualizar uma Organização de forma parcial."""
+    nome: Optional[str] = Field(None, description="Nome da organização")
+    sigla: Optional[str] = Field(None, description="Sigla da organização")
+    cnpj: Optional[str] = Field(None, description="CNPJ da organização")
+    tipo: Optional[str] = Field(None, description="Tipo da organização")
+    cliente_ativo_sigma: Optional[bool] = Field(None, description="Assinatura ativa")
+    organizacao_superior_id: Optional[UUID] = Field(None, description="UUID da organização mãe")
+    dados_especificos: Optional[Dict] = Field(None, description="JSONB com os dados adicionais do formulário")
 
 
 class OrganizacaoResponse(OrganizacaoBase):

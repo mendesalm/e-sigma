@@ -42,13 +42,44 @@ def criar_organizacao(db: Session, dados_org: OrganizacaoCreate):
     db.commit()
     db.refresh(nova_organizacao) # Recarrega o objeto com o ID gerado pelo banco
     
-    # Criar arquitetura de arquivos isolada para o Tenant (Multi-Tenant File System)
-    # Apenas se for uma Loja (ou Obediência), mas como a regra pedia loja, criamos para todas as organizações.
-    nome_pasta = f"loja_{nova_organizacao.id}" if nova_organizacao.tipo == "LOJA" else f"org_{nova_organizacao.id}"
-    base_path = os.path.join("armazenamento", "instancias", nome_pasta)
-    
-    pastas_padrao = ["logo", "documentos", "imagens", "artigos", "fotos"]
-    for pasta in pastas_padrao:
-        os.makedirs(os.path.join(base_path, pasta), exist_ok=True)
-        
     return nova_organizacao
+
+from api.organizacoes.schemas import OrganizacaoUpdate
+
+def atualizar_organizacao(db: Session, org_id: UUID, dados: OrganizacaoUpdate):
+    """
+    Atualiza parcialmente os dados de uma organização existente.
+    """
+    org = obter_organizacao_por_id(db, org_id)
+    if not org:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Organização não encontrada para atualização."
+        )
+    
+    # Validação de Negócio: Impedir CNPJ duplicado
+    if dados.cnpj and dados.cnpj != org.cnpj:
+        existe = db.query(Organizacao).filter(Organizacao.cnpj == dados.cnpj).first()
+        if existe:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="O CNPJ informado já está cadastrado em outra organização."
+            )
+            
+    # Aplica as modificações enviadas ignorando valores nulos
+    update_data = dados.model_dump(exclude_unset=True)
+    
+    # Lógica especial para mesclar o JSONB dados_especificos
+    if "dados_especificos" in update_data and update_data["dados_especificos"] is not None:
+        dados_antigos = org.dados_especificos or {}
+        # Merge de dicts
+        org.dados_especificos = {**dados_antigos, **update_data["dados_especificos"]}
+        del update_data["dados_especificos"]
+        
+    for key, value in update_data.items():
+        setattr(org, key, value)
+        
+    db.commit()
+    db.refresh(org)
+    
+    return org

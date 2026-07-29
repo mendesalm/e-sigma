@@ -75,3 +75,17 @@ def obter_organizacao(
             detail="A organização solicitada não existe."
         )
     return organizacao
+
+@router.patch(
+    "/{org_id}", 
+    response_model=schemas.OrganizacaoResponse,
+    summary="Atualizar Organização Parcialmente",
+    description="Atualiza dados da organização e faz o merge inteligente no JSON de dados específicos.",
+    response_description="O objeto atualizado."
+)
+def atualizar_organizacao(
+    org_id: UUID,
+    dados: schemas.OrganizacaoUpdate,
+    db: Session = Depends(obter_banco_de_dados)
+):
+    return servicos.atualizar_organizacao(db=db, org_id=org_id, dados=dados)
