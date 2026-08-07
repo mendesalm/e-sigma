@@ -40,7 +40,7 @@ export const DashboardGlobal: React.FC = () => {
   ];
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #1E1E2F 0%, #2a2a4a 100%)' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #050f19 0%, #0a2540 100%)' }}>
       <CssBaseline />
       
       {/* Barra de Topo */}
@@ -52,7 +52,7 @@ export const DashboardGlobal: React.FC = () => {
         boxShadow: 'none'
       }}>
         <Toolbar>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, color: '#FFD700', fontWeight: 'bold', letterSpacing: 1 }}>
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, color: '#00E5FF', fontWeight: 'bold', letterSpacing: 1 }}>
             Sigma 2.0 <Typography component="span" sx={{ color: 'rgba(255,255,255,0.5)' }}>| Painel Sistêmico Global</Typography>
           </Typography>
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', backgroundColor: 'rgba(0,0,0,0.2)', px: 2, py: 0.5, borderRadius: 4, border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -89,9 +89,9 @@ export const DashboardGlobal: React.FC = () => {
                     borderRadius: 2,
                     transition: 'all 0.3s ease',
                     '&.Mui-selected': {
-                      backgroundColor: 'rgba(255, 215, 0, 0.15)',
+                      backgroundColor: 'rgba(0, 229, 255, 0.15)',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                      border: '1px solid rgba(255, 215, 0, 0.3)'
+                      border: '1px solid rgba(0, 229, 255, 0.3)'
                     },
                     '&:hover': {
                       backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -99,15 +99,19 @@ export const DashboardGlobal: React.FC = () => {
                     }
                   }}
                 >
-                  <ListItemIcon sx={{ color: abaAtiva === item.id ? '#FFD700' : 'rgba(255,255,255,0.6)', minWidth: 40 }}>
+                  <ListItemIcon sx={{ color: abaAtiva === item.id ? '#00E5FF' : 'rgba(255,255,255,0.6)', minWidth: 40 }}>
                     {item.icon}
                   </ListItemIcon>
                   <ListItemText 
                     primary={item.text} 
-                    primaryTypographyProps={{ 
-                      fontWeight: abaAtiva === item.id ? 600 : 400,
-                      color: abaAtiva === item.id ? '#FFD700' : 'rgba(255,255,255,0.8)'
-                    }} 
+                    slotProps={{
+                      primary: {
+                        sx: {
+                          fontWeight: abaAtiva === item.id ? 600 : 400,
+                          color: abaAtiva === item.id ? '#00E5FF' : 'rgba(255,255,255,0.8)'
+                        }
+                      }
+                    }}
                   />
                 </ListItemButton>
               </ListItem>
@@ -138,7 +142,7 @@ export const DashboardGlobal: React.FC = () => {
 
         {abaAtiva === 4 && (
           <Paper sx={{ p: 4, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
-            <Typography variant="h5" gutterBottom sx={{ color: '#FFD700', fontWeight: 'bold' }}>
+            <Typography variant="h5" gutterBottom sx={{ color: '#00E5FF', fontWeight: 'bold' }}>
               Custos Sistêmicos (Infraestrutura)
             </Typography>
             <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>
@@ -149,7 +153,7 @@ export const DashboardGlobal: React.FC = () => {
 
         {abaAtiva === 5 && (
           <Paper sx={{ p: 4, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
-            <Typography variant="h5" gutterBottom sx={{ color: '#FFD700', fontWeight: 'bold' }}>
+            <Typography variant="h5" gutterBottom sx={{ color: '#00E5FF', fontWeight: 'bold' }}>
               Gestão de Administradores
             </Typography>
             <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>

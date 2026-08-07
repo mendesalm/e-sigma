@@ -502,11 +502,11 @@ export const PaginaAterrissagem: React.FC = () => {
                 ...glassStyle, 
                 p: 4, 
                 textAlign: 'center', 
-                border: theme.palette.mode === 'dark' ? '2px solid rgba(255, 215, 0, 0.5)' : '2px solid rgba(217, 119, 6, 0.5)',
-                boxShadow: theme.palette.mode === 'dark' ? '0 0 20px rgba(255, 215, 0, 0.15)' : '0 6px 20px rgba(217, 119, 6, 0.2)',
+                border: theme.palette.mode === 'dark' ? '2px solid rgba(0, 229, 255, 0.5)' : '2px solid rgba(217, 119, 6, 0.5)',
+                boxShadow: theme.palette.mode === 'dark' ? '0 0 20px rgba(0, 229, 255, 0.15)' : '0 6px 20px rgba(217, 119, 6, 0.2)',
                 transform: { md: 'scale(1.05)' } 
               }}>
-                <Typography variant="h5" sx={{ color: theme.palette.mode === 'dark' ? '#FFD700' : '#d97706', fontWeight: 600, mb: 3, fontFamily: "'Tektur', sans-serif" }}>
+                <Typography variant="h5" sx={{ color: theme.palette.mode === 'dark' ? '#00E5FF' : '#d97706', fontWeight: 600, mb: 3, fontFamily: "'Tektur', sans-serif" }}>
                   INTERMEDIÁRIO
                 </Typography>
                 <Box sx={{ textAlign: 'left', mb: 4, minHeight: '180px' }}>
@@ -516,10 +516,10 @@ export const PaginaAterrissagem: React.FC = () => {
                   <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>• Fórum de Discussão</Typography>
                   <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>• Suporte Prioritário</Typography>
                 </Box>
-                <Typography variant="h4" sx={{ color: theme.palette.mode === 'dark' ? '#FFD700' : '#d97706', fontWeight: 'bold', mb: 3 }}>
+                <Typography variant="h4" sx={{ color: theme.palette.mode === 'dark' ? '#00E5FF' : '#d97706', fontWeight: 'bold', mb: 3 }}>
                   R$ 90<Typography component="span" variant="body1" sx={{ color: 'text.secondary' }}>/mês</Typography>
                 </Typography>
-                <Button variant="contained" sx={{ bgcolor: theme.palette.mode === 'dark' ? '#FFD700' : '#d97706', color: theme.palette.mode === 'dark' ? '#000' : '#fff', fontWeight: 'bold', borderRadius: '20px', py: 1, '&:hover': { bgcolor: theme.palette.mode === 'dark' ? '#F0C800' : '#b45309' } }} fullWidth onClick={() => handleOpenContact('Intermediário')}>
+                <Button variant="contained" sx={{ bgcolor: theme.palette.mode === 'dark' ? '#00E5FF' : '#d97706', color: theme.palette.mode === 'dark' ? '#000' : '#fff', fontWeight: 'bold', borderRadius: '20px', py: 1, '&:hover': { bgcolor: theme.palette.mode === 'dark' ? '#00b8cc' : '#b45309' } }} fullWidth onClick={() => handleOpenContact('Intermediário')}>
                   ASSINAR AGORA
                 </Button>
               </Paper>

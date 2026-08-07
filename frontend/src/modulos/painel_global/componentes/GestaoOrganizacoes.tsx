@@ -98,10 +98,10 @@ export const GestaoOrganizacoes: React.FC = () => {
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ color: '#FFD700', fontWeight: 'bold' }}>
+        <Typography variant="h5" sx={{ color: '#00E5FF', fontWeight: 'bold' }}>
           Gestão de Lojas e Obediências
         </Typography>
-        <Button variant="contained" sx={{ backgroundColor: '#FFD700', color: '#1E1E2F', '&:hover': { backgroundColor: '#e6c200' }}}>
+        <Button variant="contained" sx={{ backgroundColor: '#00E5FF', color: '#050f19', '&:hover': { backgroundColor: '#00b8cc' }}}>
           Nova Organização
         </Button>
       </Box>
@@ -112,7 +112,7 @@ export const GestaoOrganizacoes: React.FC = () => {
           onChange={handleTabChange} 
           textColor="inherit"
           indicatorColor="secondary"
-          sx={{ mb: 3, '& .MuiTabs-indicator': { backgroundColor: '#FFD700' } }}
+          sx={{ mb: 3, '& .MuiTabs-indicator': { backgroundColor: '#00E5FF' } }}
         >
           <Tab label="Todas" />
           <Tab label="Lojas" />
@@ -133,7 +133,7 @@ export const GestaoOrganizacoes: React.FC = () => {
                 '& .MuiOutlinedInput-root': { 
                   color: 'white',
                   '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                  '&:hover fieldset': { borderColor: '#FFD700' },
+                  '&:hover fieldset': { borderColor: '#00E5FF' },
                 },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }
               }}
@@ -144,7 +144,7 @@ export const GestaoOrganizacoes: React.FC = () => {
                 '& .MuiOutlinedInput-root': { 
                   color: 'white',
                   '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                  '&:hover fieldset': { borderColor: '#FFD700' },
+                  '&:hover fieldset': { borderColor: '#00E5FF' },
                 },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
                 '& .MuiSvgIcon-root': { color: 'white' }
@@ -168,12 +168,12 @@ export const GestaoOrganizacoes: React.FC = () => {
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Sigla/Número</strong></TableCell>
-                <TableCell sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Nome</strong></TableCell>
-                <TableCell sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Tipo</strong></TableCell>
-                <TableCell sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Subordinação</strong></TableCell>
-                <TableCell sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Status SaaS</strong></TableCell>
-                <TableCell align="right" sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Ações</strong></TableCell>
+                <TableCell sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Sigla/Número</strong></TableCell>
+                <TableCell sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Nome</strong></TableCell>
+                <TableCell sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Tipo</strong></TableCell>
+                <TableCell sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Subordinação</strong></TableCell>
+                <TableCell sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Status SaaS</strong></TableCell>
+                <TableCell align="right" sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Ações</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -217,7 +217,7 @@ export const GestaoOrganizacoes: React.FC = () => {
                       )}
                     </TableCell>
                     <TableCell align="right" sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <Button onClick={() => abrirDetalhes(org)} size="small" sx={{ color: '#FFD700', borderColor: 'rgba(255,215,0,0.5)', '&:hover': { borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.1)' } }} variant="outlined">Detalhes</Button>
+                      <Button onClick={() => abrirDetalhes(org)} size="small" sx={{ color: '#00E5FF', borderColor: 'rgba(0,229,255,0.5)', '&:hover': { borderColor: '#00E5FF', backgroundColor: 'rgba(0,229,255,0.1)' } }} variant="outlined">Detalhes</Button>
                     </TableCell>
                   </TableRow>
                 ))

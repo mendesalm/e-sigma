@@ -41,10 +41,10 @@ export const GestaoAssinaturas: React.FC = () => {
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ color: '#FFD700', fontWeight: 'bold' }}>
+        <Typography variant="h5" sx={{ color: '#00E5FF', fontWeight: 'bold' }}>
           Monitoramento de Assinaturas (SaaS)
         </Typography>
-        <Button variant="contained" sx={{ backgroundColor: '#FFD700', color: '#1E1E2F', '&:hover': { backgroundColor: '#e6c200' }}}>
+        <Button variant="contained" sx={{ backgroundColor: '#00E5FF', color: '#050f19', '&:hover': { backgroundColor: '#00b8cc' }}}>
           Novo Plano
         </Button>
       </Box>
@@ -56,10 +56,10 @@ export const GestaoAssinaturas: React.FC = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Plano</strong></TableCell>
-                <TableCell sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Valor Mensal</strong></TableCell>
-                <TableCell sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Status</strong></TableCell>
-                <TableCell align="right" sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Ações</strong></TableCell>
+                <TableCell sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Plano</strong></TableCell>
+                <TableCell sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Valor Mensal</strong></TableCell>
+                <TableCell sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Status</strong></TableCell>
+                <TableCell align="right" sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Ações</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -76,7 +76,7 @@ export const GestaoAssinaturas: React.FC = () => {
                       <Chip label="Ativo" sx={{ backgroundColor: 'rgba(76, 175, 80, 0.2)', color: '#a5d6a7', border: '1px solid rgba(76, 175, 80, 0.3)' }} size="small" />
                     </TableCell>
                     <TableCell align="right" sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <Button size="small" sx={{ color: '#FFD700', borderColor: 'rgba(255,215,0,0.5)', '&:hover': { borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.1)' } }} variant="outlined">Editar</Button>
+                      <Button size="small" sx={{ color: '#00E5FF', borderColor: 'rgba(0,229,255,0.5)', '&:hover': { borderColor: '#00E5FF', backgroundColor: 'rgba(0,229,255,0.1)' } }} variant="outlined">Editar</Button>
                     </TableCell>
                   </TableRow>
                 ))

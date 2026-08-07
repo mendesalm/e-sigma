@@ -76,7 +76,14 @@ export const GestaoLojas: React.FC = () => {
     
     if (!matchBusca) return false;
     
-    if (filtroObediencia && org.organizacao_superior_id !== filtroObediencia) return false;
+    if (filtroObediencia) {
+      if (org.organizacao_superior_id !== filtroObediencia) {
+        const parent = organizacoes.find(o => o.id === org.organizacao_superior_id);
+        if (!parent || parent.organizacao_superior_id !== filtroObediencia) {
+          return false;
+        }
+      }
+    }
 
     return true;
   }).sort((a, b) => {
@@ -102,17 +109,17 @@ export const GestaoLojas: React.FC = () => {
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ color: '#FFD700', fontWeight: 'bold' }}>
+        <Typography variant="h5" sx={{ color: '#00E5FF', fontWeight: 'bold' }}>
           Gestão de Lojas
         </Typography>
-        <Button variant="contained" sx={{ backgroundColor: '#FFD700', color: '#1E1E2F', '&:hover': { backgroundColor: '#e6c200' }}}>
+        <Button variant="contained" sx={{ backgroundColor: '#00E5FF', color: '#050f19', '&:hover': { backgroundColor: '#00b8cc' }}}>
           Nova Loja
         </Button>
       </Box>
       
       <Paper sx={{ ...glassStyle, p: 3, mb: 4 }}>
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField 
               fullWidth 
               label="Buscar Lojas" 
@@ -123,18 +130,18 @@ export const GestaoLojas: React.FC = () => {
                 '& .MuiOutlinedInput-root': { 
                   color: 'white',
                   '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                  '&:hover fieldset': { borderColor: '#FFD700' },
+                  '&:hover fieldset': { borderColor: '#00E5FF' },
                 },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' }
               }}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <FormControl fullWidth sx={{ 
                 '& .MuiOutlinedInput-root': { 
                   color: 'white',
                   '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                  '&:hover fieldset': { borderColor: '#FFD700' },
+                  '&:hover fieldset': { borderColor: '#00E5FF' },
                 },
                 '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
                 '& .MuiSvgIcon-root': { color: 'white' }
@@ -158,11 +165,11 @@ export const GestaoLojas: React.FC = () => {
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Título</strong></TableCell>
-                <TableCell sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Nome</strong></TableCell>
-                <TableCell sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Número</strong></TableCell>
-                <TableCell sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Obediência</strong></TableCell>
-                <TableCell align="right" sx={{ backgroundColor: 'rgba(30, 30, 47, 0.9)', color: '#FFD700', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Ações</strong></TableCell>
+                <TableCell sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Título</strong></TableCell>
+                <TableCell sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Nome</strong></TableCell>
+                <TableCell sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Número</strong></TableCell>
+                <TableCell sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Obediência</strong></TableCell>
+                <TableCell align="right" sx={{ backgroundColor: 'rgba(5, 15, 25, 0.9)', color: '#00E5FF', borderBottom: '1px solid rgba(255,255,255,0.1)' }}><strong>Ações</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -187,13 +194,15 @@ export const GestaoLojas: React.FC = () => {
                         if (!parent) return 'Desconhecida';
                         if (parent.tipo === 'SUBOBEDIENCIA' && parent.organizacao_superior_id) {
                           const grandParent = obedienciasDisponiveis.find(o => o.id === parent.organizacao_superior_id);
-                          return grandParent ? grandParent.sigla || grandParent.nome : parent.sigla || parent.nome;
+                          const gName = grandParent ? grandParent.sigla || grandParent.nome : '';
+                          const pName = parent.sigla || parent.nome;
+                          return gName ? `${gName} / ${pName}` : pName;
                         }
                         return parent.sigla || parent.nome;
                       })()}
                     </TableCell>
                     <TableCell align="right" sx={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <Button variant="outlined" size="small" onClick={() => abrirDetalhes(org)} sx={{ color: '#FFD700', borderColor: 'rgba(255,215,0,0.5)', '&:hover': { borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.1)' }}}>
+                      <Button variant="outlined" size="small" onClick={() => abrirDetalhes(org)} sx={{ color: '#00E5FF', borderColor: 'rgba(0,229,255,0.5)', '&:hover': { borderColor: '#00E5FF', backgroundColor: 'rgba(0,229,255,0.1)' }}}>
                         Editar
                       </Button>
                     </TableCell>

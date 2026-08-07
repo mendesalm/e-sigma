@@ -19,7 +19,8 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 # Garante que a pasta base de armazenamento estático exista
-os.makedirs("armazenamento/instancias", exist_ok=True)
+os.makedirs("armazenamento/instancias/public", exist_ok=True)
+os.makedirs("armazenamento/instancias/private", exist_ok=True)
 
 # Instanciação da aplicação FastAPI com configurações ricas para o Swagger (Regra de Ouro)
 app = FastAPI(
@@ -55,8 +56,8 @@ app.add_middleware(
 # REGISTRO DE ROTAS (MONOLITO MODULAR E ARQUIVOS)
 # ==========================================
 
-# Monta o sistema de arquivos para acesso público no frontend
-app.mount("/armazenamento", StaticFiles(directory="armazenamento"), name="armazenamento")
+# Monta o sistema de arquivos para acesso público no frontend (somente pasta public)
+app.mount("/storage", StaticFiles(directory="armazenamento/instancias/public"), name="public_storage")
 
 app.include_router(router_organizacoes, prefix="/api/v1")
 app.include_router(router_pessoas, prefix="/api/v1")

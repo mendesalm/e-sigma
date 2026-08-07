@@ -89,3 +89,30 @@ def atualizar_organizacao(
     db: Session = Depends(obter_banco_de_dados)
 ):
     return servicos.atualizar_organizacao(db=db, org_id=org_id, dados=dados)
+
+from api.organizacoes.tenant_service import TenantStorageService
+
+@router.post(
+    "/{org_id}/ativar",
+    response_model=schemas.OrganizacaoResponse,
+    summary="Ativar Organização no SaaS",
+    description="Ativa a organização (cliente_ativo_sigma = True) e cria a estrutura isolada de arquivos do Tenant.",
+    response_description="O objeto atualizado."
+)
+def ativar_organizacao_saas(
+    org_id: UUID,
+    db: Session = Depends(obter_banco_de_dados)
+):
+    org = servicos.obter_organizacao_por_id(db=db, org_id=org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="Organização não encontrada.")
+        
+    # Ativa e cria a estrutura física
+    slug = TenantStorageService.activate_tenant_storage(db, org)
+    
+    # Atualiza a flag
+    org.cliente_ativo_sigma = True
+    db.commit()
+    db.refresh(org)
+    
+    return org

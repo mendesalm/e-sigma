@@ -1,0 +1,1 @@
+Diretorio privado loja
