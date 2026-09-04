@@ -8,13 +8,16 @@ Diretriz de Ouro: Este arquivo segue o padrão de nomenclatura e comentários em
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Lê a string de conexão (DATABASE_URL) das variáveis de ambiente.
 # Caso não esteja definida (como no ambiente de desenvolvimento inicial), utiliza um valor padrão (fallback).
 # O banco de dados alvo para a V2 é exclusivamente o banco nomeado "sigma".
 DATABASE_URL = os.environ.get(
     "DATABASE_URL", 
-    "postgresql+psycopg2://Sistema:Vdfskln49DSFkod@69.62.89.211:5432/sigma"
+    "postgresql+psycopg2://esigma:BsysT23754RthfFg@69.62.89.211:5432/esigma"
 )
 
 # Cria o "motor" (engine) do banco de dados, que é a interface central entre o SQLAlchemy e o PostgreSQL.
