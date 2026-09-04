@@ -103,6 +103,12 @@ def processar_webhook_asaas(db: Session, payload: dict, token: str):
         org = db.query(Organizacao).filter(Organizacao.id == org_id).first()
         if org:
             org.cliente_ativo_sigma = True
+            
+            # Buscar e ativar a assinatura correspondente
+            assinatura = db.query(AssinaturaSaaS).filter(AssinaturaSaaS.organizacao_id == org.id).first()
+            if assinatura:
+                assinatura.status = 'ATIVA'
+
             TenantStorageService.activate_tenant_storage(db, org)
             db.commit()
 
@@ -110,6 +116,11 @@ def processar_webhook_asaas(db: Session, payload: dict, token: str):
         org = db.query(Organizacao).filter(Organizacao.id == org_id).first()
         if org:
             org.cliente_ativo_sigma = False
+            
+            assinatura = db.query(AssinaturaSaaS).filter(AssinaturaSaaS.organizacao_id == org.id).first()
+            if assinatura:
+                assinatura.status = 'INADIMPLENTE'
+
             db.commit()
     
     return {"status": "sucesso"}
