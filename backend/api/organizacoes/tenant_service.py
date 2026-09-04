@@ -68,8 +68,20 @@ class TenantStorageService:
         if priv_template.exists():
             shutil.copytree(priv_template, priv_instancia, dirs_exist_ok=True)
             
-        if 'storage_slug' not in org.dados_especificos:
-            org.dados_especificos = {**org.dados_especificos, 'storage_slug': slug}
+        if 'storage_slug' not in org.dados_especificos or 'webmaster' not in org.dados_especificos:
+            novos_dados = {**org.dados_especificos, 'storage_slug': slug}
+            
+            # Geração de Webmaster
+            if 'webmaster' not in novos_dados:
+                if org.tipo == 'LOJA':
+                    # gob.loja2181@e-sigma.app
+                    email = f"{slug.replace('_', '.').lower()}@e-sigma.app"
+                else:
+                    # gob@e-sigma.app
+                    email = f"{slug.lower()}@e-sigma.app"
+                novos_dados['webmaster'] = email
+                
+            org.dados_especificos = novos_dados
             db.commit()
             
         return slug

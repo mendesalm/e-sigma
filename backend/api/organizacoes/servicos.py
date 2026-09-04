@@ -10,6 +10,19 @@ from api.organizacoes.schemas import OrganizacaoCreate
 from uuid import UUID
 from fastapi import HTTPException, status
 
+def format_title_case(text: str) -> str:
+    if not text:
+        return text
+    prepositions = {"de", "da", "do", "das", "dos", "e", "com", "na", "no", "nas", "nos"}
+    words = text.split()
+    formatted = []
+    for i, word in enumerate(words):
+        if word.lower() in prepositions and i != 0:
+            formatted.append(word.lower())
+        else:
+            formatted.append(word.capitalize())
+    return " ".join(formatted)
+
 def listar_organizacoes(db: Session, limite: int = 100):
     """Retorna uma lista das organizações cadastradas."""
     return db.query(Organizacao).limit(limite).all()
@@ -24,6 +37,22 @@ def criar_organizacao(db: Session, dados_org: OrganizacaoCreate):
     Aplica validações de negócio, como a exclusividade do CNPJ.
     """
     
+    # Padronização de formatação
+    if dados_org.nome:
+        dados_org.nome = format_title_case(dados_org.nome)
+        
+    # Prevenção de duplicidade (Case-Insensitive) pelo Nome
+    if dados_org.nome:
+        existe_nome = db.query(Organizacao).filter(
+            Organizacao.nome.ilike(dados_org.nome),
+            Organizacao.tipo == dados_org.tipo
+        ).first()
+        if existe_nome:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Já existe uma organização do tipo {dados_org.tipo} cadastrada com o nome '{existe_nome.nome}'."
+            )
+
     # Validação de Negócio: Impedir CNPJ duplicado se ele for informado
     if dados_org.cnpj:
         existe = db.query(Organizacao).filter(Organizacao.cnpj == dados_org.cnpj).first()
@@ -57,6 +86,22 @@ def atualizar_organizacao(db: Session, org_id: UUID, dados: OrganizacaoUpdate):
             detail="Organização não encontrada para atualização."
         )
     
+    # Padronização de formatação
+    if dados.nome:
+        dados.nome = format_title_case(dados.nome)
+
+    # Prevenção de duplicidade (Case-Insensitive) pelo Nome
+    if dados.nome and dados.nome.lower() != org.nome.lower():
+        existe_nome = db.query(Organizacao).filter(
+            Organizacao.nome.ilike(dados.nome),
+            Organizacao.tipo == org.tipo
+        ).first()
+        if existe_nome:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Já existe uma organização do tipo {org.tipo} cadastrada com o nome '{existe_nome.nome}'."
+            )
+
     # Validação de Negócio: Impedir CNPJ duplicado
     if dados.cnpj and dados.cnpj != org.cnpj:
         existe = db.query(Organizacao).filter(Organizacao.cnpj == dados.cnpj).first()

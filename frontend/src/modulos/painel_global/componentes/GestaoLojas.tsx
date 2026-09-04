@@ -18,6 +18,7 @@ interface Organizacao {
 }
 
 import { ModalEdicaoOrganizacao } from './ModalEdicaoOrganizacao';
+import { ModalImportacaoMassa } from './ModalImportacaoMassa';
 
 export const GestaoLojas: React.FC = () => {
   const [organizacoes, setOrganizacoes] = useState<Organizacao[]>([]);
@@ -28,6 +29,9 @@ export const GestaoLojas: React.FC = () => {
   // Estado para o modal de detalhes
   const [modalAberto, setModalAberto] = useState(false);
   const [orgSelecionada, setOrgSelecionada] = useState<any>(null);
+
+  // Estado para modal de importação
+  const [modalImportacaoAberto, setModalImportacaoAberto] = useState(false);
 
   // Paginação
   const [page, setPage] = useState(0);
@@ -112,9 +116,14 @@ export const GestaoLojas: React.FC = () => {
         <Typography variant="h5" sx={{ color: '#00E5FF', fontWeight: 'bold' }}>
           Gestão de Lojas
         </Typography>
-        <Button variant="contained" sx={{ backgroundColor: '#00E5FF', color: '#050f19', '&:hover': { backgroundColor: '#00b8cc' }}}>
-          Nova Loja
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button variant="outlined" onClick={() => setModalImportacaoAberto(true)} sx={{ color: '#00E5FF', borderColor: '#00E5FF', '&:hover': { backgroundColor: 'rgba(0, 229, 255, 0.1)' }}}>
+            Importar CSV
+          </Button>
+          <Button variant="contained" onClick={() => { setOrgSelecionada({ id: 'novo', nome: '', tipo: 'LOJA', cliente_ativo_sigma: false, criado_em: new Date().toISOString(), dados_especificos: {} }); setModalAberto(true); }} sx={{ backgroundColor: '#00E5FF', color: '#050f19', '&:hover': { backgroundColor: '#00b8cc' }}}>
+            Nova Loja
+          </Button>
+        </Box>
       </Box>
       
       <Paper sx={{ ...glassStyle, p: 3, mb: 4 }}>
@@ -232,16 +241,23 @@ export const GestaoLojas: React.FC = () => {
           sx={{ color: 'white', borderTop: '1px solid rgba(255,255,255,0.1)' }}
         />
       </Paper>
+      {modalAberto && (
+        <ModalEdicaoOrganizacao 
+          open={modalAberto}
+          onClose={fecharDetalhes}
+          org={orgSelecionada}
+          onSaveSuccess={fetchOrganizacoes}
+          todasOrganizacoes={organizacoes}
+        />
+      )}
 
-      <ModalEdicaoOrganizacao 
-        open={modalAberto}
-        onClose={fecharDetalhes}
-        org={orgSelecionada}
-        todasOrganizacoes={organizacoes}
-        onSaveSuccess={() => {
-          fetchOrganizacoes();
-        }}
-      />
+      {modalImportacaoAberto && (
+        <ModalImportacaoMassa
+          aberto={modalImportacaoAberto}
+          fechar={() => setModalImportacaoAberto(false)}
+          onSuccess={fetchOrganizacoes}
+        />
+      )}
     </Box>
   );
 };

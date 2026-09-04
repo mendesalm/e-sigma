@@ -4,6 +4,20 @@ Este documento atua como a **Regra de Ouro** de documentação histórica do Sig
 
 ---
 
+## [10 de Agosto de 2026] - Prevenção de Colisão, Padronização e Importação em Massa (SaaS)
+**Módulo:** `SaaS` / `Organizações`
+
+### Regras Estritas e Segurança de Dados
+- **Title Casing Inteligente (`servicos.py`)**: Implementado um algoritmo que intercepta o nome de todas as novas organizações (e atualizações). O texto é forçado para o padrão "Primeira Letra Maiúscula", mantendo as preposições (de, da, do, dos, e) em minúsculo. Ex: "GRANDE ORIENTE do brasil" vira "Grande Oriente do Brasil".
+- **Bloqueio de Duplicidade (Case-Insensitive)**: Inserida trava matemática no banco de dados. Tentar criar uma organização com um nome que já existe (independente da capitalização) retorna erro `400 Bad Request`, eliminando a criação de entidades como "Gob" e "GOB" simultaneamente.
+
+### Arquitetura de Importação
+- **Geração Dinâmica de Webmaster**: O serviço `TenantStorageService` foi ampliado. Ao ativar o SaaS, gera e injeta o e-mail oficial (ex: `gob.loja2181@e-sigma.app` ou `gob@e-sigma.app`) direto na coluna `dados_especificos` do PostgreSQL.
+- **Rota Analítica de Upload (`importador.py`)**: Criado serviço para leitura de tabelas CSV (.csv nativo para evitar lentidão e custos com dependências de Excel). Ele cruza os dados do arquivo com o banco de dados em memória e detecta colisões sem salvar.
+- **Frontend Interativo (Decisão do SuperAdmin)**: Desenvolvido o componente `ModalImportacaoMassa.tsx`. Ele fornece o preview listando visualmente em verde (inéditos), amarelo (duplicatas) e vermelho (erros), permitindo que o usuário tenha a decisão final antes da inserção em lote. O processo de importação *não* ativa a assinatura automaticamente.
+
+---
+
 ## [07 de Agosto de 2026] - Infraestrutura SaaS e File System Multi-Tenant
 **Módulo:** `SaaS` / `Organizações`
 

@@ -93,7 +93,11 @@ export const ModalEdicaoOrganizacao: React.FC<ModalEdicaoOrganizacaoProps> = ({ 
         organizacao_superior_id: orgSuperiorId
       };
 
-      await axios.patch(`http://localhost:8000/api/v1/organizacoes/${org.id}`, payload);
+      if (org.id === 'novo') {
+        await axios.post(`http://localhost:8000/api/v1/organizacoes/`, payload);
+      } else {
+        await axios.patch(`http://localhost:8000/api/v1/organizacoes/${org.id}`, payload);
+      }
       onSaveSuccess();
       onClose();
     } catch (error) {
@@ -105,17 +109,16 @@ export const ModalEdicaoOrganizacao: React.FC<ModalEdicaoOrganizacaoProps> = ({ 
   };
 
   const handleActivate = async () => {
-    if (!window.confirm("Deseja ativar esta organização no SaaS e gerar as pastas do Tenant?")) return;
+    if (!window.confirm("Você será redirecionado para o Stripe para assinar o plano. Deseja continuar?")) return;
     setLoading(true);
     try {
-      await axios.post(`http://localhost:8000/api/v1/organizacoes/${org.id}/ativar`);
-      alert("Ativação realizada com sucesso! Estrutura de arquivos criada.");
-      onSaveSuccess();
-      onClose();
+      const resp = await axios.post(`http://localhost:8000/api/v1/saas/checkout/${org.id}`);
+      if (resp.data.url) {
+        window.location.href = resp.data.url;
+      }
     } catch (error) {
-      console.error("Erro ao ativar:", error);
-      alert("Erro ao realizar a ativação.");
-    } finally {
+      console.error("Erro ao gerar checkout:", error);
+      alert("Erro ao conectar com o gateway de pagamento.");
       setLoading(false);
     }
   };
@@ -359,7 +362,7 @@ export const ModalEdicaoOrganizacao: React.FC<ModalEdicaoOrganizacaoProps> = ({ 
               <TextField InputLabelProps={{ shrink: true }} fullWidth label="Webmaster (Gerado pelo Sigma)" value={formData.webmaster || 'Pendente'} disabled sx={textFieldStyles} />
             </Grid>
             <Grid item xs={12} sm={3}>
-              <TextField InputLabelProps={{ shrink: true }} fullWidth label="Data de Criação" value={new Date(org.criado_em).toLocaleDateString()} disabled sx={textFieldStyles} />
+              <TextField InputLabelProps={{ shrink: true }} fullWidth label="Data de Criação" value={org.id === 'novo' ? 'Nova' : new Date(org.criado_em).toLocaleDateString()} disabled sx={textFieldStyles} />
             </Grid>
             <Grid item xs={12} sm={3}>
               <TextField InputLabelProps={{ shrink: true }} fullWidth label="Data de Upgrade" value={formData.data_upgrade || 'N/A'} disabled sx={textFieldStyles} />
@@ -370,7 +373,7 @@ export const ModalEdicaoOrganizacao: React.FC<ModalEdicaoOrganizacaoProps> = ({ 
 
       <DialogActions sx={{ borderTop: '1px solid rgba(255,255,255,0.1)', p: 2, justifyContent: 'space-between' }}>
         <div>
-          {!org.cliente_ativo_sigma && (
+          {org.id !== 'novo' && !org.cliente_ativo_sigma && (
             <Button 
               variant="outlined" 
               onClick={handleActivate} 

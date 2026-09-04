@@ -36,3 +36,22 @@ def listar_tratados(db: Session = Depends(obter_banco_de_dados)):
 @router.post("/tratados", response_model=schemas.TratadoAmizadeResponse, status_code=status.HTTP_201_CREATED)
 def criar_tratado(dados: schemas.TratadoAmizadeCreate, db: Session = Depends(obter_banco_de_dados)):
     return servicos.criar_tratado(db=db, dados_tratado=dados)
+
+from fastapi import Request
+
+@router.post("/checkout/{org_id}")
+def criar_checkout_session(org_id: str, db: Session = Depends(obter_banco_de_dados)):
+    """
+    Gera a URL de Checkout do Stripe para ativar a assinatura de uma organização.
+    """
+    return servicos.criar_checkout_saas(db=db, org_id=org_id)
+
+@router.post("/asaas-webhook")
+async def asaas_webhook(request: Request, db: Session = Depends(obter_banco_de_dados)):
+    """
+    Recebe os webhooks do Asaas assíncronamente.
+    """
+    payload = await request.json()
+    token = request.headers.get("asaas-access-token", "")
+    
+    return servicos.processar_webhook_asaas(db=db, payload=payload, token=token)
