@@ -9,7 +9,7 @@ import bcrypt
 from datetime import datetime, timedelta
 
 from dependencias import obter_banco_de_dados
-from models import Pessoa
+from models import Pessoa, MembroOrganizacao, AssinaturaSaaS
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 
@@ -64,10 +64,23 @@ async def login_with_google(request: GoogleAuthRequest, db: Session = Depends(ob
         elif "webmaster" in permissoes:
             role_primaria = "webmaster"
 
+        # Buscar a loja primária do usuário
+        vinculo = db.query(MembroOrganizacao).filter(MembroOrganizacao.pessoa_id == user.id, MembroOrganizacao.status == "ATIVO").first()
+        loja_id = str(vinculo.organizacao_id) if vinculo else None
+        
+        harmonia_ativo = False
+        if loja_id:
+            assinatura = db.query(AssinaturaSaaS).filter(AssinaturaSaaS.organizacao_id == loja_id, AssinaturaSaaS.status == "ATIVA").first()
+            if assinatura and assinatura.plano:
+                modulos = assinatura.plano.modulos_inclusos or []
+                harmonia_ativo = "harmonia" in modulos
+
         # Gerar o JWT do Sigma 2.0
         token_payload = {
             "sub": user.email,
             "user_id": str(user.id),
+            "loja_id": loja_id,
+            "harmonia_ativo": harmonia_ativo,
             "role": role_primaria,
             "requires_selection": False # Mock por enquanto até termos seleção multi-lojas completa
         }
@@ -102,9 +115,23 @@ async def login_tradicional(request: LoginRequest, db: Session = Depends(obter_b
     elif "webmaster" in permissoes:
         role_primaria = "webmaster"
 
+    # Buscar a loja primária do usuário (assumindo a primeira ativa que ele tiver)
+    vinculo = db.query(MembroOrganizacao).filter(MembroOrganizacao.pessoa_id == user.id, MembroOrganizacao.status == "ATIVO").first()
+    loja_id = str(vinculo.organizacao_id) if vinculo else None
+    
+    harmonia_ativo = False
+    if loja_id:
+        # Verifica se a loja possui assinatura ativa
+        assinatura = db.query(AssinaturaSaaS).filter(AssinaturaSaaS.organizacao_id == loja_id, AssinaturaSaaS.status == "ATIVA").first()
+        if assinatura and assinatura.plano:
+            modulos = assinatura.plano.modulos_inclusos or []
+            harmonia_ativo = "harmonia" in modulos
+
     token_payload = {
         "sub": user.email,
         "user_id": str(user.id),
+        "loja_id": loja_id,
+        "harmonia_ativo": harmonia_ativo,
         "role": role_primaria,
         "requires_selection": False
     }

@@ -206,6 +206,25 @@ class Pessoa(Base):
         self.dados_especificos['historico_cargos'] = historico
 
 
+class MembroOrganizacao(Base):
+    """
+    Tabela associativa entre Pessoa (Membro) e Organização (Loja/Obediência).
+    """
+    __tablename__ = 'membros_organizacoes'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    pessoa_id = Column(UUID(as_uuid=True), ForeignKey('pessoas.id'), nullable=False, index=True)
+    organizacao_id = Column(UUID(as_uuid=True), ForeignKey('organizacoes.id'), nullable=False, index=True)
+    
+    cargo = Column(String(100), nullable=True) # Venerável, Secretário, Mestre de Harmonia
+    status = Column(String(50), default="ATIVO") # ATIVO, AFASTADO, DESLIGADO
+    data_filiacao = Column(Date, nullable=True)
+    
+    criado_em = Column(DateTime(timezone=True), server_default=func.now())
+
+    pessoa = relationship("Pessoa", backref="vinculos_organizacoes")
+    organizacao = relationship("Organizacao", backref="membros")
+
 # =============================================================================
 # MÓDULO FINANCEIRO
 # =============================================================================
@@ -445,6 +464,7 @@ class PlanoSaaS(Base):
     descricao = Column(String(255), nullable=True)
     valor_mensal = Column(Numeric(10, 2), nullable=False)
     limite_membros = Column(Integer, nullable=True) # None = Ilimitado
+    modulos_inclusos = Column(JSONB, default=list) # Ex: ["harmonia", "tesouraria", "secretaria"]
     
     ativo = Column(Boolean, default=True)
     criado_em = Column(DateTime(timezone=True), server_default=func.now())
