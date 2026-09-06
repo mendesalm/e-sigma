@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from typing import Optional
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
@@ -21,10 +22,12 @@ ACCESS_TOKEN_EXPIRE_DAYS = 7
 # Pydantic schemas
 class GoogleAuthRequest(BaseModel):
     credential: str
+    modulo_origem: Optional[str] = None
 
 class LoginRequest(BaseModel):
     username: str
     password: str
+    modulo_origem: Optional[str] = None
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -82,7 +85,8 @@ async def login_with_google(request: GoogleAuthRequest, db: Session = Depends(ob
             "loja_id": loja_id,
             "harmonia_ativo": harmonia_ativo,
             "role": role_primaria,
-            "requires_selection": False # Mock por enquanto até termos seleção multi-lojas completa
+            "requires_selection": False,
+            "modulo_origem": request.modulo_origem
         }
 
         access_token = create_access_token(token_payload)
@@ -133,7 +137,8 @@ async def login_tradicional(request: LoginRequest, db: Session = Depends(obter_b
         "loja_id": loja_id,
         "harmonia_ativo": harmonia_ativo,
         "role": role_primaria,
-        "requires_selection": False
+        "requires_selection": False,
+        "modulo_origem": request.modulo_origem
     }
     
     access_token = create_access_token(token_payload)
