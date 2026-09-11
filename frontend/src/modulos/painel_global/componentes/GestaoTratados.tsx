@@ -18,7 +18,7 @@ export const GestaoTratados: React.FC = () => {
 
   const fetchTratados = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/v1/saas/tratados');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/saas/tratados`);
       setTratados(response.data);
     } catch (error) {
       console.error("Erro ao buscar tratados:", error);

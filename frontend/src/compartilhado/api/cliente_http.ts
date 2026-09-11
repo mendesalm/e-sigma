@@ -5,7 +5,7 @@ import axios from 'axios';
  * Centraliza as requisições para a API do Sigma 2.0 (FastAPI).
  */
 export const api = axios.create({
-  baseURL: 'http://localhost:8000/api/v1',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

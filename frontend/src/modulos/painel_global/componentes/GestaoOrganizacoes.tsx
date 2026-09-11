@@ -42,7 +42,7 @@ export const GestaoOrganizacoes: React.FC = () => {
 
   const fetchOrganizacoes = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/v1/organizacoes/?limite=5000');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/organizacoes/?limite=5000`);
       setOrganizacoes(response.data);
     } catch (error) {
       console.error("Erro ao buscar organizações:", error);

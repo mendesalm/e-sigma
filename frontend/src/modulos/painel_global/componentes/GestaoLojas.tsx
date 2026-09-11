@@ -48,7 +48,7 @@ export const GestaoLojas: React.FC = () => {
 
   const fetchOrganizacoes = async () => {
     try {
-      const resp = await axios.get('http://localhost:8000/api/v1/organizacoes/?limite=5000');
+      const resp = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/organizacoes/?limite=5000`);
       setOrganizacoes(resp.data);
     } catch (error) {
       console.error("Erro ao buscar lojas:", error);

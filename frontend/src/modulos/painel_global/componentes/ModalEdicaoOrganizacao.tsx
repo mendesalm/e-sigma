@@ -94,9 +94,9 @@ export const ModalEdicaoOrganizacao: React.FC<ModalEdicaoOrganizacaoProps> = ({ 
       };
 
       if (org.id === 'novo') {
-        await axios.post(`http://localhost:8000/api/v1/organizacoes/`, payload);
+        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/organizacoes/`, payload);
       } else {
-        await axios.patch(`http://localhost:8000/api/v1/organizacoes/${org.id}`, payload);
+        await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/organizacoes/${org.id}`, payload);
       }
       onSaveSuccess();
       onClose();
@@ -112,7 +112,7 @@ export const ModalEdicaoOrganizacao: React.FC<ModalEdicaoOrganizacaoProps> = ({ 
     if (!window.confirm("Você será redirecionado para o Stripe para assinar o plano. Deseja continuar?")) return;
     setLoading(true);
     try {
-      const resp = await axios.post(`http://localhost:8000/api/v1/saas/checkout/${org.id}`);
+      const resp = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/saas/checkout/${org.id}`);
       if (resp.data.url) {
         window.location.href = resp.data.url;
       }
