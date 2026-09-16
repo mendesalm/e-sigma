@@ -115,7 +115,26 @@ class Pessoa(Base):
     # Colunas vitais para que a Pessoa consiga logar no sistema SaaS
     senha_hash = Column(String(255), nullable=True) # Pode ser null se a pessoa for apenas um registro sem acesso
     ultimo_login = Column(DateTime(timezone=True), nullable=True)
-    status_acesso = Column(String(50), default="ATIVO") # ATIVO, SUSPENSO, BLOQUEADO
+    # ATIVO, SUSPENSO, BLOQUEADO (2026-09-16: o valor "PENDENTE" e o fluxo de
+    # "Ativação de Cadastro" que o usava foram REMOVIDOS na mesma sessão em
+    # que foram criados — permitiam que qualquer um se auto-aprovasse como
+    # membro sem nenhuma validação humana, o que contrariava a concepção do
+    # e-Sigma. Ver seção 11 x 12 de claude/decisao-controle-acesso-cadastro.md.
+    # A única forma de uma Pessoa nova ganhar acesso agora é via Solicitação
+    # de Cadastro (seção 2/12) aprovada por um humano — ver
+    # api/solicitacoes_cadastro/.
+    status_acesso = Column(String(50), default="ATIVO")
+
+    # --- Solicitação de Cadastro (2026-09-16, substitui a "Ativação de
+    # Cadastro" removida) ---
+    # Quando uma Pessoa nasce a partir de uma SolicitacaoCadastro aprovada, o
+    # sistema gera e envia por e-mail uma senha de uso único — nunca definida
+    # pelo próprio candidato. Esta flag força a troca no primeiro login (ver
+    # POST /auth/trocar-senha-obrigatoria em api/auth/rotas.py); o login
+    # continua funcionando normalmente com a senha provisória, só o cliente
+    # deve redirecionar para a troca obrigatória ao ver este campo "true" na
+    # resposta de /auth/login.
+    deve_trocar_senha = Column(Boolean, nullable=False, default=False)
     
     # ---------------------------------------------------------
     # PROPRIEDADES DE CONVENIÊNCIA OO (Abstração das Colunas JSON)
@@ -490,5 +509,97 @@ class AssinaturaSaaS(Base):
     
     organizacao = relationship("Organizacao")
     plano = relationship("PlanoSaaS")
-    
+
+    criado_em = Column(DateTime(timezone=True), server_default=func.now())
+
+
+# =============================================================================
+# MÓDULO DE SOLICITAÇÃO DE CADASTRO (Via 2 — 2026-09-16)
+# =============================================================================
+
+class SolicitacaoCadastro(Base):
+    """
+    Fila de solicitações de cadastro de um candidato NOVO (que ainda não é
+    Pessoa no sistema) — a "Via 2" de entrada descrita em
+    claude/decisao-controle-acesso-cadastro.md, seção 2.
+
+    Concepção (reafirmada em 2026-09-16 depois de uma primeira tentativa —
+    "Ativação de Cadastro" — ter sido corretamente rejeitada pelo usuário
+    por permitir auto-aprovação): candidato preenche este formulário
+    (Potência, Loja, identificação pessoal) → fica PENDENTE → um humano
+    (SuperAdmin, ou o VM da própria Loja referenciada — ver
+    api/solicitacoes_cadastro/servicos.py) aprova ou rejeita → só na
+    aprovação o sistema cria a `Pessoa` de verdade, gera uma senha
+    provisória e envia por e-mail (nunca o próprio candidato escolhe a
+    senha nesta etapa — `Pessoa.deve_trocar_senha` força a troca no
+    primeiro login).
+
+    Por decisão do usuário (2026-09-16), esta fila mora no e-Sigma (não no
+    módulo Lojas, que ainda não tem frontend próprio) — decisão revisitável
+    quando o Lojas tiver sua própria tela de aprovação.
+
+    ATUALIZAÇÃO (2026-09-16, mesmo dia): por pedido explícito do usuário,
+    o formulário passou a exigir TODOS os campos de identificação (nada é
+    mais opcional) e a Loja passou a ser identificada por DOIS campos
+    obrigatórios — número e nome — que precisam resolver para a mesma
+    Organizacao (ver `_resolver_loja` em servicos.py); antes era um único
+    campo de texto livre. "Potência" continua sem nenhuma sugestão/
+    autocomplete no frontend, de propósito (mesmo filtro anti-curioso da
+    seção 2.3).
+    """
+    __tablename__ = 'solicitacoes_cadastro'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    # --- Dados exatamente como o candidato digitou (nunca "corrigidos"
+    # automaticamente — a comparação normalizada acontece em memória na
+    # hora da validação, ver servicos.py). Todos obrigatórios (2026-09-16). ---
+    potencia_informada = Column(String(255), nullable=False)
+    numero_loja_informado = Column(String(50), nullable=False)
+    nome_loja_informado = Column(String(255), nullable=False)
+    nome_completo = Column(String(255), nullable=False)
+    # 1=Aprendiz, 2=Companheiro, 3=Mestre — mesma convenção de
+    # Pessoa.grau_simbolico (models.py).
+    grau_maconico = Column(Integer, nullable=False)
+    cim = Column(String(50), nullable=False)
+    cpf = Column(String(14), nullable=False)
+    email = Column(String(255), nullable=False)
+    telefone = Column(String(20), nullable=False)
+    cargo_atual = Column(String(100), nullable=False)
+    data_inicio_mandato = Column(Date, nullable=True)
+
+    # PENDENTE | APROVADO | REJEITADO | REJEITADO_AUTOMATICO (ver seção 2.3
+    # da decisão — Loja existe mas não pertence à Potência informada, OU
+    # número e nome da Loja resolvem para Lojas diferentes: fica
+    # registrado para análise agregada de fraude, mas o candidato recebe a
+    # mesma resposta genérica de sucesso, nunca o motivo específico).
+    status = Column(String(30), nullable=False, default="PENDENTE")
+
+    # Resolução automática da hierarquia (preenchida na submissão, para a
+    # tela de aprovação não precisar refazer a busca) — nulo se a Potência
+    # ou a Loja não foram reconhecidas (caso em que a submissão é rejeitada
+    # sem nem criar este registro, ver servicos.py).
+    loja_resolvida_id = Column(UUID(as_uuid=True), ForeignKey('organizacoes.id'), nullable=True)
+    potencia_resolvida_id = Column(UUID(as_uuid=True), ForeignKey('organizacoes.id'), nullable=True)
+
+    # Só preenchido no caminho REJEITADO_AUTOMATICO — nunca exposto ao
+    # candidato, só ao SuperAdmin (seção 2.3).
+    motivo_interno = Column(String(500), nullable=True)
+
+    # Motivo de uma rejeição HUMANA (diferente de REJEITADO_AUTOMATICO) —
+    # este sim é enviado ao candidato por e-mail (concepção original da
+    # seção 2: "se reprovado, e-mail com o motivo").
+    motivo_rejeicao = Column(String(500), nullable=True)
+
+    # --- Controle de aprovação (lock otimista, seção 2.4 — "primeiro que
+    # agir vale": um UPDATE condicionado a `version` igual à lida evita
+    # dois aprovadores colidindo na mesma solicitação) ---
+    version = Column(Integer, nullable=False, default=0)
+    aprovado_ou_rejeitado_por_id = Column(UUID(as_uuid=True), ForeignKey('pessoas.id'), nullable=True)
+    aprovado_ou_rejeitado_por_nome = Column(String(255), nullable=True)
+    resolvido_em = Column(DateTime(timezone=True), nullable=True)
+
+    # Pessoa criada quando este pedido é aprovado (nulo até a aprovação).
+    pessoa_criada_id = Column(UUID(as_uuid=True), ForeignKey('pessoas.id'), nullable=True)
+
     criado_em = Column(DateTime(timezone=True), server_default=func.now())

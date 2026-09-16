@@ -31,8 +31,9 @@ describe('Página de Login (Unidade)', () => {
     // Verifica se o título apareceu
     expect(screen.getByText('Acesso Restrito')).toBeInTheDocument();
     
-    // Verifica se o campo de E-mail existe
-    expect(screen.getByLabelText(/CIM ou E-mail/i)).toBeInTheDocument();
+    // Verifica se o campo de identificador existe (aceita e-mail, CIM ou CPF
+    // desde 2026-09-14 — ver e-sigma/backend/api/auth/rotas.py)
+    expect(screen.getByLabelText(/E-mail, CIM ou CPF/i)).toBeInTheDocument();
     
     // Verifica se o campo de Senha existe
     expect(screen.getByLabelText(/Senha/i)).toBeInTheDocument();

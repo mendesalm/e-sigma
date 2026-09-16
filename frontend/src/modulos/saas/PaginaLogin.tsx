@@ -176,9 +176,9 @@ export const PaginaLogin: React.FC = () => {
               required
               fullWidth
               id="email"
-              label="CIM ou E-mail"
+              label="E-mail, CIM ou CPF"
               name="email"
-              autoComplete="email"
+              autoComplete="username"
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}

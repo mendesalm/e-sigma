@@ -15,6 +15,7 @@ from api.documentos.rotas import router as router_documentos
 from api.biblioteca.rotas import router as router_biblioteca
 from api.auth.rotas import router as router_auth
 from api.saas.rotas import router as router_saas
+from api.solicitacoes_cadastro.rotas import router as router_solicitacoes_cadastro
 from fastapi.staticfiles import StaticFiles
 import os
 
@@ -68,6 +69,7 @@ app.include_router(router_documentos, prefix="/api/v1")
 app.include_router(router_biblioteca, prefix="/api/v1")
 app.include_router(router_auth, prefix="/api/v1")
 app.include_router(router_saas, prefix="/api/v1")
+app.include_router(router_solicitacoes_cadastro, prefix="/api/v1")
 
 @app.get("/", tags=["Health"])
 def root():
