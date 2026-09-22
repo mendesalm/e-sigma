@@ -64,7 +64,11 @@ def listar_solicitacoes(
         "o próprio candidato nunca escolhe a senha nesta etapa. Usa lock "
         "otimista por `version` (o corpo deve enviar a versão lida na "
         "listagem); se outra pessoa já processou a solicitação, retorna "
-        "409."
+        "409. Se o cargo do candidato já tiver um titular ATIVO na mesma "
+        "Loja, também retorna 409 (`detail.tipo == 'conflito_cargo'`) com "
+        "os dados do titular atual — reenvie com `resolucao_conflito_cargo` "
+        "('destituir_anterior' ou 'novo_cargo' + `novo_cargo`) para "
+        "decidir."
     ),
 )
 def aprovar_solicitacao(
@@ -73,7 +77,14 @@ def aprovar_solicitacao(
     payload: dict = Depends(obter_usuario_logado),
     db: Session = Depends(obter_banco_de_dados),
 ):
-    return servicos.aprovar_solicitacao(db, solicitacao_id, corpo.version, payload)
+    return servicos.aprovar_solicitacao(
+        db,
+        solicitacao_id,
+        corpo.version,
+        payload,
+        resolucao_conflito_cargo=corpo.resolucao_conflito_cargo,
+        novo_cargo=corpo.novo_cargo,
+    )
 
 
 @router.post(

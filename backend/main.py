@@ -49,9 +49,12 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173", "http://127.0.0.1:5173",  # e-Sigma frontend (Vite)
-        "http://localhost:5174", "http://127.0.0.1:5174",  # CoReVM frontend (Vite) - chama o login do e-Sigma direto
-        "http://localhost:5175", "http://127.0.0.1:5175",  # Lojas frontend (Vite) - chama o login do e-Sigma direto
+        "http://localhost:5174", "http://127.0.0.1:5174",  # CoReVM frontend (Vite)
+        "http://localhost:5175", "http://127.0.0.1:5175",  # Lojas frontend (Vite)
+        "http://localhost:5176", "http://127.0.0.1:5176",  # Sigma Legado frontend (Vite)
+        "http://localhost:5177", "http://127.0.0.1:5177",  # Sigma 2.0 frontend (Vite)
     ],
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

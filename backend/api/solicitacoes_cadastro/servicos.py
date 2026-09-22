@@ -60,6 +60,44 @@ from api.solicitacoes_cadastro.cliente_lojas import buscar_loja_por_numero
 # antes de comparar, mesma cautela de 2.3.
 CARGOS_APROVADORES_DA_LOJA = {"venerável mestre", "suplente", "suplente-regente", "suplente regente"}
 
+# Lista fechada de "cargos cadastrados" (decisão do usuário, 2026-09-17,
+# sobre resolução de conflito de cargo na aprovação da Solicitação de
+# Cadastro): os mesmos 22 cargos eletivos/administrativos de Loja já
+# usados no CoReVM (`core/constants.py::CargoLoja`), mais os dois papéis
+# do Conselho que também podem aparecer aqui como `MembroOrganizacao.cargo`
+# (Suplente / Suplente-Regente — ver CARGOS_APROVADORES_DA_LOJA acima).
+# Qualquer `cargo_atual` informado pelo candidato que NÃO corresponda
+# (depois de normalizar acento/caixa) a nenhum destes é tratado como
+# "Obreiro" — um membro comum, sem cargo de Loja nenhum.
+CARGOS_LOJA_VALIDOS = [
+    "Venerável Mestre",
+    "Primeiro Vigilante",
+    "Segundo Vigilante",
+    "Orador",
+    "Secretário",
+    "Tesoureiro",
+    "Chanceler",
+    "Primeiro Experto",
+    "Segundo Experto",
+    "Primeiro Diácono",
+    "Segundo Diácono",
+    "Mestre de Harmonia",
+    "Hospitaleiro",
+    "Arquiteto",
+    "Porta Estandarte",
+    "Porta Bandeiras",
+    "Mestre de Banquetes",
+    "Cobridor Externo",
+    "Cobridor Interno",
+    "Bibliotecário",
+    "Porta Espadas",
+    "Guarda do Templo",
+    "Suplente",
+    "Suplente-Regente",
+]
+
+CARGO_PADRAO_SEM_OFICIO = "Obreiro"
+
 RESPOSTA_GENERICA = {
     "mensagem": (
         "Recebemos sua solicitação de cadastro. Ela será analisada pela "
@@ -81,6 +119,45 @@ def _normalizar(texto: Optional[str]) -> str:
 
 def _apenas_digitos(texto: Optional[str]) -> str:
     return re.sub(r"\D", "", texto or "")
+
+
+_CARGOS_LOJA_VALIDOS_NORMALIZADOS = {_normalizar(c): c for c in CARGOS_LOJA_VALIDOS}
+
+
+def _canonicalizar_cargo(cargo_informado: Optional[str]) -> str:
+    """Normaliza um cargo (texto livre) para a forma canônica de um dos
+    `CARGOS_LOJA_VALIDOS`. Se não corresponder a nenhum -- inclusive
+    quando vazio -- devolve `CARGO_PADRAO_SEM_OFICIO` ("Obreiro"), por
+    decisão do usuário (2026-09-17): um membro sem nenhum dos cargos
+    cadastrados é, por definição, um Obreiro comum."""
+    chave = _normalizar(cargo_informado)
+    return _CARGOS_LOJA_VALIDOS_NORMALIZADOS.get(chave, CARGO_PADRAO_SEM_OFICIO)
+
+
+def _titular_ativo_do_cargo(
+    db: Session, loja_id: UUID, cargo: str, excluir_pessoa_id: Optional[UUID] = None
+) -> Optional[MembroOrganizacao]:
+    """Devolve o `MembroOrganizacao` ATIVO que já ocupa este cargo nesta
+    Loja, se existir. "Obreiro" nunca conflita -- não é um cargo exclusivo,
+    várias pessoas podem ser Obreiro na mesma Loja ao mesmo tempo; só os
+    cargos nomeados de `CARGOS_LOJA_VALIDOS` são tratados como de
+    ocupação única (decisão do usuário, 2026-09-17)."""
+    if _normalizar(cargo) == _normalizar(CARGO_PADRAO_SEM_OFICIO):
+        return None
+    candidatos = (
+        db.query(MembroOrganizacao)
+        .filter(
+            MembroOrganizacao.organizacao_id == loja_id,
+            MembroOrganizacao.status == "ATIVO",
+        )
+        .all()
+    )
+    for membro in candidatos:
+        if excluir_pessoa_id and membro.pessoa_id == excluir_pessoa_id:
+            continue
+        if _normalizar(membro.cargo) == _normalizar(cargo):
+            return membro
+    return None
 
 
 def _upsert_organizacao_potencia(db: Session, potencia_api: dict) -> Organizacao:
@@ -411,8 +488,43 @@ def _gerar_senha_provisoria() -> str:
 
 
 def aprovar_solicitacao(
-    db: Session, solicitacao_id: UUID, version_esperada: int, payload: dict
+    db: Session,
+    solicitacao_id: UUID,
+    version_esperada: int,
+    payload: dict,
+    resolucao_conflito_cargo: Optional[str] = None,
+    novo_cargo: Optional[str] = None,
 ) -> SolicitacaoCadastro:
+    """
+    ATUALIZAÇÃO (2026-09-17, decisão do usuário): antes desta mudança, o
+    cargo informado pelo candidato (`cargo_atual`) era gravado direto em
+    `MembroOrganizacao.cargo` sem nenhuma checagem -- se já existisse
+    alguém ATIVO no mesmo cargo, na mesma Loja, os dois ficavam ativos ao
+    mesmo tempo (achado ao investigar o teste manual do candidato CIM
+    9911001, ver roteiro de testes manuais, Bloco A.2). Agora:
+
+    1. `cargo_atual` (ou `novo_cargo`, se o aprovador escolher um cargo
+       diferente do informado) é canonicalizado contra `CARGOS_LOJA_VALIDOS`
+       -- se não corresponder a nenhum cargo cadastrado, o cargo final é
+       "Obreiro" (`CARGO_PADRAO_SEM_OFICIO`), que nunca conflita (não é
+       cargo de ocupação única).
+    2. Se o cargo final já tiver um titular ATIVO na mesma Loja, e o
+       aprovador não tiver enviado `resolucao_conflito_cargo`, a aprovação
+       é bloqueada com 409 (`detail.tipo == "conflito_cargo"`), devolvendo
+       os dados do titular atual para a tela decidir.
+    3. Só o SuperAdmin/webmaster ou o VM/Suplente da PRÓPRIA Loja (mesma
+       checagem de `exigir_aprovador_elegivel` usada para aprovar/rejeitar)
+       podem resolver esse conflito -- não há papel novo, é o mesmo
+       aprovador elegível de sempre.
+    4. `resolucao_conflito_cargo="destituir_anterior"` desativa
+       (`status="DESTITUIDO"`) o `MembroOrganizacao` do titular anterior e
+       segue com a aprovação normalmente. `resolucao_conflito_cargo=
+       "novo_cargo"` (com `novo_cargo` preenchido) usa esse cargo em vez do
+       informado na solicitação -- se ele também colidir, o mesmo 409 é
+       levantado de novo, com o novo conflito. "Negar o cadastro" não tem
+       campo próprio aqui -- é só chamar `rejeitar_solicitacao` (rota já
+       existente), já que negar não muda nada deste fluxo de aprovação.
+    """
     solicitacao = db.query(SolicitacaoCadastro).filter(SolicitacaoCadastro.id == solicitacao_id).first()
     if not solicitacao:
         raise HTTPException(status_code=404, detail="Solicitação não encontrada.")
@@ -421,6 +533,35 @@ def aprovar_solicitacao(
 
     if solicitacao.status != "PENDENTE":
         raise HTTPException(status_code=400, detail=f"Solicitação já está com status {solicitacao.status}.")
+
+    if resolucao_conflito_cargo == "novo_cargo" and not (novo_cargo or "").strip():
+        raise HTTPException(
+            status_code=400,
+            detail="novo_cargo é obrigatório quando resolucao_conflito_cargo='novo_cargo'.",
+        )
+
+    cargo_final = _canonicalizar_cargo(novo_cargo if novo_cargo else solicitacao.cargo_atual)
+
+    titular_atual: Optional[MembroOrganizacao] = None
+    if solicitacao.loja_resolvida_id:
+        titular_atual = _titular_ativo_do_cargo(db, solicitacao.loja_resolvida_id, cargo_final)
+
+    if titular_atual and resolucao_conflito_cargo != "destituir_anterior":
+        pessoa_titular = db.query(Pessoa).filter(Pessoa.id == titular_atual.pessoa_id).first()
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "tipo": "conflito_cargo",
+                "cargo": cargo_final,
+                "titular_atual": {
+                    "membro_organizacao_id": str(titular_atual.id),
+                    "pessoa_id": str(titular_atual.pessoa_id),
+                    "nome_completo": pessoa_titular.nome_completo if pessoa_titular else None,
+                    "cim": (pessoa_titular.dados_especificos or {}).get("cim") if pessoa_titular else None,
+                    "desde": titular_atual.criado_em.isoformat() if titular_atual.criado_em else None,
+                },
+            },
+        )
 
     # Lock otimista (2.4, "primeiro que agir vale"): o UPDATE só é
     # considerado válido se `version` ainda for a que o aprovador leu.
@@ -453,11 +594,13 @@ def aprovar_solicitacao(
     db.flush()  # garante pessoa.id antes de vincular
 
     if solicitacao.loja_resolvida_id:
+        if titular_atual and resolucao_conflito_cargo == "destituir_anterior":
+            titular_atual.status = "DESTITUIDO"
         db.add(
             MembroOrganizacao(
                 pessoa_id=pessoa.id,
                 organizacao_id=solicitacao.loja_resolvida_id,
-                cargo=solicitacao.cargo_atual,
+                cargo=cargo_final,
                 status="ATIVO",
             )
         )

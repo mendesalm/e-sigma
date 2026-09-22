@@ -236,7 +236,7 @@ class MembroOrganizacao(Base):
     organizacao_id = Column(UUID(as_uuid=True), ForeignKey('organizacoes.id'), nullable=False, index=True)
     
     cargo = Column(String(100), nullable=True) # Venerável, Secretário, Mestre de Harmonia
-    status = Column(String(50), default="ATIVO") # ATIVO, AFASTADO, DESLIGADO
+    status = Column(String(50), default="ATIVO") # ATIVO, AFASTADO, DESLIGADO, DESTITUIDO (novo em 2026-09-17: usado quando a aprovação de uma Solicitação de Cadastro resolve um conflito de cargo destituindo o titular anterior -- ver api/solicitacoes_cadastro/servicos.py::aprovar_solicitacao)
     data_filiacao = Column(Date, nullable=True)
     
     criado_em = Column(DateTime(timezone=True), server_default=func.now())
@@ -603,3 +603,94 @@ class SolicitacaoCadastro(Base):
     pessoa_criada_id = Column(UUID(as_uuid=True), ForeignKey('pessoas.id'), nullable=True)
 
     criado_em = Column(DateTime(timezone=True), server_default=func.now())
+
+
+# =============================================================================
+# MÓDULO DE AUTENTICAÇÃO MODERNA (magic link / OTP — 2026-09-17)
+# =============================================================================
+
+class DesafioAutenticacao(Base):
+    """
+    Desafio de autenticação sem senha, de uso único (magic link e passkeys
+    hoje; OTP por e-mail é o próximo candidato a usar a mesma tabela, com
+    `tipo="OTP_EMAIL"` -- ver claude/decisao-modernizacao-login.md no
+    Project "Core" para o desenho completo dos três métodos avaliados
+    (magic link, OTP, passkeys)).
+
+    IMPORTANTE (2026-09-18, adição de passkeys): o campo `token_hash`
+    guarda coisas DIFERENTES dependendo do `tipo`, apesar do nome:
+    - `MAGIC_LINK`: sha256 hexdigest do token (o token em si é um segredo
+      portador -- quem tiver o valor original consegue logar, por isso só
+      o hash fica em repouso).
+    - `PASSKEY_REGISTRO` / `PASSKEY_LOGIN`: o challenge do WebAuthn em si
+      (base64url), gravado em CLARO, não um hash. Um challenge do WebAuthn
+      NÃO é um segredo portador -- ele só serve para o navegador assinar
+      com a chave privada que nunca saiu do autenticador; conhecer o
+      challenge sozinho não permite autenticar. Precisa estar em claro
+      porque as funções `verify_registration_response`/
+      `verify_authentication_response` da lib `webauthn` exigem o valor
+      original de volta (`expected_challenge`), não um hash dele.
+
+    Mesma filosofia anti-enumeração do resto do módulo de auth: a
+    existência de um desafio pendente para um identificador nunca é
+    revelada por uma resposta diferente da genérica.
+    """
+    __tablename__ = 'desafios_autenticacao'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    pessoa_id = Column(UUID(as_uuid=True), ForeignKey('pessoas.id'), nullable=False, index=True)
+
+    # "MAGIC_LINK", "PASSKEY_REGISTRO", "PASSKEY_LOGIN" hoje; "OTP_EMAIL"/
+    # "OTP_SMS" ficam reservados para quando esse método for implementado
+    # (mesma tabela, sem migração nova -- só passam a popular `tipo` com um
+    # valor novo).
+    tipo = Column(String(30), nullable=False, default="MAGIC_LINK")
+
+    token_hash = Column(String(64), nullable=False, index=True)  # ver docstring da classe -- nem sempre é um hash
+    expira_em = Column(DateTime(timezone=True), nullable=False)
+    usado_em = Column(DateTime(timezone=True), nullable=True)
+
+    criado_em = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class CredencialPasskey(Base):
+    """
+    Uma credencial WebAuthn (passkey) registrada por uma `Pessoa` -- ver
+    claude/decisao-modernizacao-login.md, seção 4, para o desenho completo.
+    Uma `Pessoa` pode ter várias (um por dispositivo/autenticador:
+    notebook, celular, chave de segurança física, etc.).
+
+    RP ID compartilhado entre todos os subdomínios do ecossistema
+    (`e-sigma.app`), confirmado pelo usuário em 2026-09-17 -- uma passkey
+    registrada em `core.e-sigma.app` também funciona em
+    `lojas.e-sigma.app` e nos demais subdomínios.
+
+    `credential_id` e `public_key` são guardados como base64url (o
+    formato que a lib `webauthn`/`@simplewebauthn` já usa para trafegar
+    esses valores) -- nunca a chave privada, que nunca saiu do
+    autenticador do usuário. `sign_count` é o contador anti-clonagem do
+    autenticador: a cada login, o novo valor precisa ser maior que o
+    guardado, senão é indício de uma cópia clonada da credencial sendo
+    reapresentada (a lib `webauthn` já faz essa checagem em
+    `verify_authentication_response`).
+    """
+    __tablename__ = 'credenciais_passkey'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    pessoa_id = Column(UUID(as_uuid=True), ForeignKey('pessoas.id'), nullable=False, index=True)
+
+    credential_id = Column(String(512), nullable=False, unique=True, index=True)  # base64url
+    public_key = Column(String(1024), nullable=False)  # base64url da chave pública COSE
+    sign_count = Column(Integer, nullable=False, default=0)
+
+    # Lista de transportes reportada pelo navegador na criação (ex.:
+    # ["internal"], ["hybrid", "usb"]) -- informativo, não usado na
+    # verificação; ajuda a montar allowCredentials no login.
+    transports = Column(JSONB, nullable=True)
+
+    # Apelido que o próprio usuário escolhe ao cadastrar, para reconhecer
+    # o dispositivo depois na tela de gestão (ex.: "Notebook do trabalho").
+    apelido = Column(String(100), nullable=True)
+
+    criado_em = Column(DateTime(timezone=True), server_default=func.now())
+    ultimo_uso_em = Column(DateTime(timezone=True), nullable=True)

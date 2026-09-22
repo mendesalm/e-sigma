@@ -4,7 +4,7 @@ Ver models.py (SolicitacaoCadastro) e claude/decisao-controle-acesso-cadastro.md
 seções 2 e 12, para o desenho completo.
 """
 from datetime import date, datetime
-from typing import Optional
+from typing import Literal, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
@@ -82,4 +82,31 @@ class RejeitarSolicitacaoRequest(BaseModel):
 
 
 class AprovarSolicitacaoRequest(BaseModel):
+    """
+    ATUALIZAÇÃO (2026-09-17, decisão do usuário): campos novos para
+    resolver um conflito de cargo (cargo já ocupado por outro membro
+    ATIVO na mesma Loja) -- ver servicos.aprovar_solicitacao para a lógica
+    completa. Quando há conflito e nenhum dos dois campos é enviado, a
+    API responde 409 com `detail.tipo == "conflito_cargo"` e os dados do
+    titular atual, para a tela decidir. Só quem já é elegível para
+    aprovar esta solicitação (SuperAdmin/webmaster, ou VM/Suplente da
+    própria Loja -- `exigir_aprovador_elegivel`) pode enviar esta
+    resolução; não existe papel novo para isso.
+    """
     version: int = Field(..., description="Versão lida pelo aprovador — usada para o lock otimista.")
+    resolucao_conflito_cargo: Optional[Literal["destituir_anterior", "novo_cargo"]] = Field(
+        None,
+        description=(
+            "Só necessário quando uma tentativa anterior devolveu 409 "
+            "com detail.tipo='conflito_cargo'. 'destituir_anterior' "
+            "desativa o titular atual do cargo antes de aprovar; "
+            "'novo_cargo' usa o cargo enviado em `novo_cargo` em vez do "
+            "informado na solicitação."
+        ),
+    )
+    novo_cargo: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=100,
+        description="Obrigatório quando resolucao_conflito_cargo='novo_cargo'.",
+    )

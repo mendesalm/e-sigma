@@ -40,3 +40,20 @@ def validar_forca_senha(senha: str) -> Optional[str]:
     if senha.lower() in SENHAS_FRACAS_COMUNS:
         return "Essa senha é muito comum/fraca. Escolha outra."
     return None
+
+
+# ALTERAÇÃO (2026-09-16): gerador de senha provisória reutilizável, criado
+# junto com o fluxo de "esqueci minha senha" (ver api/auth/rotas.py,
+# POST /auth/esqueci-senha). Mesmo alfabeto/tamanho já usados em
+# api/solicitacoes_cadastro/servicos.py::_gerar_senha_provisoria — mantida
+# como função separada lá (não substituída por esta) para não alterar um
+# módulo já com suíte de testes 9/9 verde sem necessidade.
+import secrets as _secrets
+
+_ALFABETO_SENHA_PROVISORIA = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"
+
+
+def gerar_senha_provisoria(tamanho: int = 12) -> str:
+    """Gera uma senha provisória aleatória (`secrets`, não `random`),
+    pronta para envio por e-mail — nunca escolhida por humano."""
+    return "".join(_secrets.choice(_ALFABETO_SENHA_PROVISORIA) for _ in range(tamanho))
