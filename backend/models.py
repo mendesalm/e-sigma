@@ -646,7 +646,7 @@ class DesafioAutenticacao(Base):
     # valor novo).
     tipo = Column(String(30), nullable=False, default="MAGIC_LINK")
 
-    token_hash = Column(String(64), nullable=False, index=True)  # ver docstring da classe -- nem sempre é um hash
+    token_hash = Column(String(255), nullable=False, index=True)  # ver docstring da classe -- nem sempre é um hash
     expira_em = Column(DateTime(timezone=True), nullable=False)
     usado_em = Column(DateTime(timezone=True), nullable=True)
 

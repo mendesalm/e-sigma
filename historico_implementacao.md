@@ -4,6 +4,17 @@ Este documento atua como a **Regra de Ouro** de documentação histórica do Sig
 
 ---
 
+## [24 de Setembro de 2026] - SSO Multi-Domínio e Sessão Unificada
+**Módulo:** `Identidade Centralizada` / `Autenticação & SSO`
+
+### Single Sign-On Global (SSO)
+- **Cookie HttpOnly Transversal (`sigma_sso_token`)**: Ao autenticar via `/auth/login` ou `/auth/passkey/login/completar`, é injetado o cookie seguro `sigma_sso_token` com escopo multi-domínio (`.e-sigma.app` em produção ou `localhost` em desenvolvimento local).
+- **Recuperação de Sessão Satélite (`GET /api/v1/auth/sso/session`)**: Criada rota que permite a CoReVM e Lojas lerem a sessão ativa em tempo real sem expor tokens via URLs ou storage desprotegido.
+- **Encerramento Unificado (`POST /api/v1/auth/logout`)**: Rota para invalidar e expirar cookies em todos os subdomínios do ecossistema.
+- **CORS Multi-Tenant Dinâmico**: Configurada regex de origens (`https://.*\.e-sigma\.app`) permitindo requisições autenticadas com credenciais entre os serviços satélites.
+
+---
+
 ## [10 de Agosto de 2026] - Prevenção de Colisão, Padronização e Importação em Massa (SaaS)
 **Módulo:** `SaaS` / `Organizações`
 

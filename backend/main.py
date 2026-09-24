@@ -53,8 +53,14 @@ app.add_middleware(
         "http://localhost:5175", "http://127.0.0.1:5175",  # Lojas frontend (Vite)
         "http://localhost:5176", "http://127.0.0.1:5176",  # Sigma Legado frontend (Vite)
         "http://localhost:5177", "http://127.0.0.1:5177",  # Sigma 2.0 frontend (Vite)
+        "https://core.e-sigma.app",
+        "https://lojas.e-sigma.app",
+        "https://e-sigma.app",
+        "https://harmonia.e-sigma.app",
+        "https://financeiro.e-sigma.app",
+        "https://biblioteca.e-sigma.app",
     ],
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|([a-zA-Z0-9-]+\.)?e-sigma\.app)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

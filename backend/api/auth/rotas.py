@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends, Request, Response
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, List, Any, Dict
@@ -86,10 +86,61 @@ def _origem_passkey_autorizada(http_request: Request) -> str:
         )
     return origem
 
+
+def _obter_rp_id_efetivo(http_request: Request) -> str:
+    """Devolve o RP ID apropriado: 'localhost' para ambiente local de desenvolvimento
+    (onde a especificação WebAuthn proíbe domínios reais como e-sigma.app) e o domínio
+    configurado PASSKEY_RP_ID em produção/staging."""
+    origem = http_request.headers.get("origin") or ""
+    if "localhost" in origem or "127.0.0.1" in origem:
+        return "localhost"
+    return PASSKEY_RP_ID
+
 # Configurações do JWT
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "minha_chave_super_secreta_sigma_2")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 7
+
+# ============================================================================
+# SSO Multi-Domínio (Cookie de Sessão Compartilhado pelo Ecossistema)
+# ============================================================================
+# Permite que todos os subdomínios (*.e-sigma.app) compartilhem a sessão autenticada.
+# Em produção: SSO_COOKIE_DOMAIN=".e-sigma.app"
+# Em desenvolvimento: None (amarra no host local atual sem causar conflitos de cookie)
+SSO_COOKIE_NAME = os.getenv("SSO_COOKIE_NAME", "sigma_sso_token")
+SSO_COOKIE_DOMAIN = os.getenv("SSO_COOKIE_DOMAIN", None)
+SSO_COOKIE_SECURE = os.getenv("SSO_COOKIE_SECURE", "false").lower() in ("true", "1", "yes")
+SSO_COOKIE_SAMESITE = os.getenv("SSO_COOKIE_SAMESITE", "lax")
+
+
+def _injetar_cookie_sso(response: Response, access_token: str) -> None:
+    """Injeta o cookie HTTP-only de SSO compartilhado pelo ecossistema Sigma.
+    Em navegadores com suporte a cookies entre subdomínios (Domain=.e-sigma.app),
+    permite transição transparente entre o e-Sigma, CoReVM, Lojas e demais satélites."""
+    max_age_segundos = ACCESS_TOKEN_EXPIRE_DAYS * 24 * 3600
+    response.set_cookie(
+        key=SSO_COOKIE_NAME,
+        value=access_token,
+        max_age=max_age_segundos,
+        expires=max_age_segundos,
+        path="/",
+        domain=SSO_COOKIE_DOMAIN if SSO_COOKIE_DOMAIN else None,
+        secure=SSO_COOKIE_SECURE,
+        httponly=True,
+        samesite=SSO_COOKIE_SAMESITE,
+    )
+
+
+def _remover_cookie_sso(response: Response) -> None:
+    """Remove o cookie de SSO de toda a rede de subdomínios."""
+    response.delete_cookie(
+        key=SSO_COOKIE_NAME,
+        path="/",
+        domain=SSO_COOKIE_DOMAIN if SSO_COOKIE_DOMAIN else None,
+        secure=SSO_COOKIE_SECURE,
+        httponly=True,
+        samesite=SSO_COOKIE_SAMESITE,
+    )
 
 # Módulos que não exigem assinatura ativa para funcionar (uso livre), mesmo
 # que a organização não tenha nenhum plano SaaS pago. Definido em 2026-09-11
@@ -293,14 +344,16 @@ def create_access_token(data: dict):
     return encoded_jwt
 
 
-def _gerar_resposta_login(db: Session, pessoa: Pessoa, modulo_origem: Optional[str]) -> dict:
+def _gerar_resposta_login(
+    db: Session,
+    pessoa: Pessoa,
+    modulo_origem: Optional[str],
+    response: Optional[Response] = None,
+) -> dict:
     """Monta o JWT e a resposta de login a partir de uma `Pessoa` já
-    autenticada por QUALQUER via (senha, Google, ou magic link) — mesmo
-    cálculo de role/loja/módulos ativos já usado em `login_tradicional` e
-    `login_with_google`, extraído aqui só para o magic link (2026-09-17,
-    ver claude/decisao-modernizacao-login.md) não precisar duplicar pela
-    terceira vez. `login_tradicional`/`login_with_google` NÃO foram
-    tocados para não arriscar esses dois caminhos já testados."""
+    autenticada por QUALQUER via (senha, Google, magic link ou passkey) — mesmo
+    cálculo de role/loja/módulos ativos. Se `response` for fornecido, também
+    grava o cookie seguro de SSO multi-domínio para o ecossistema."""
     permissoes = pessoa.permissoes_sistema or []
     role_primaria = "member"
     if "super_admin" in permissoes:
@@ -327,6 +380,10 @@ def _gerar_resposta_login(db: Session, pessoa: Pessoa, modulo_origem: Optional[s
         "modulo_origem": modulo_origem,
     }
     access_token = create_access_token(token_payload)
+
+    if response is not None:
+        _injetar_cookie_sso(response, access_token)
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -335,7 +392,11 @@ def _gerar_resposta_login(db: Session, pessoa: Pessoa, modulo_origem: Optional[s
 
 
 @router.post("/google")
-async def login_with_google(request: GoogleAuthRequest, db: Session = Depends(obter_banco_de_dados)):
+async def login_with_google(
+    request: GoogleAuthRequest,
+    response: Response,
+    db: Session = Depends(obter_banco_de_dados),
+):
     CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "COLOQUE_SEU_CLIENT_ID_AQUI")
     try:
         # Verificar o token com o Google
@@ -385,6 +446,8 @@ async def login_with_google(request: GoogleAuthRequest, db: Session = Depends(ob
         }
 
         access_token = create_access_token(token_payload)
+        _injetar_cookie_sso(response, access_token)
+
         return {
             "access_token": access_token,
             "token_type": "bearer",
@@ -397,7 +460,11 @@ async def login_with_google(request: GoogleAuthRequest, db: Session = Depends(ob
         raise HTTPException(status_code=401, detail=f"Token do Google inválido: {str(e)}")
 
 @router.post("/login")
-async def login_tradicional(request: LoginRequest, db: Session = Depends(obter_banco_de_dados)):
+async def login_tradicional(
+    request: LoginRequest,
+    response: Response,
+    db: Session = Depends(obter_banco_de_dados),
+):
     # ALTERAÇÃO (2026-09-14): aceita e-mail, CIM ou CPF no mesmo campo
     # `username` — ver `_resolver_pessoa_por_identificador`.
     user = _resolver_pessoa_por_identificador(db, request.username)
@@ -447,6 +514,8 @@ async def login_tradicional(request: LoginRequest, db: Session = Depends(obter_b
     }
 
     access_token = create_access_token(token_payload)
+    _injetar_cookie_sso(response, access_token)
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -610,6 +679,7 @@ async def magic_link_solicitar(
 async def magic_link_confirmar(
     request: MagicLinkConfirmarRequest,
     http_request: Request,
+    response: Response,
     db: Session = Depends(obter_banco_de_dados),
 ):
     # Defesa em profundidade -- o token já tem entropia alta (256 bits,
@@ -643,7 +713,7 @@ async def magic_link_confirmar(
     desafio.usado_em = agora
     db.commit()
 
-    return _gerar_resposta_login(db, pessoa, request.modulo_origem)
+    return _gerar_resposta_login(db, pessoa, request.modulo_origem, response=response)
 
 
 # ============================================================================
@@ -667,6 +737,7 @@ async def magic_link_confirmar(
     ),
 )
 async def passkey_registro_iniciar(
+    http_request: Request,
     payload: dict = Depends(obter_usuario_logado),
     db: Session = Depends(obter_banco_de_dados),
 ):
@@ -678,8 +749,10 @@ async def passkey_registro_iniciar(
         CredencialPasskey.pessoa_id == pessoa.id
     ).all()
 
+    rp_id = _obter_rp_id_efetivo(http_request)
+
     opcoes = webauthn.generate_registration_options(
-        rp_id=PASSKEY_RP_ID,
+        rp_id=rp_id,
         rp_name=PASSKEY_RP_NAME,
         user_id=str(pessoa.id).encode("utf-8"),
         user_name=pessoa.email or str(pessoa.id),
@@ -734,6 +807,7 @@ async def passkey_registro_concluir(
         raise HTTPException(status_code=401, detail="Usuário não encontrado.")
 
     origem = _origem_passkey_autorizada(http_request)
+    rp_id = _obter_rp_id_efetivo(http_request)
     agora = datetime.now(timezone.utc)
 
     desafio = (
@@ -758,7 +832,7 @@ async def passkey_registro_concluir(
             credential=json.dumps(request.credential),
             expected_challenge=base64url_to_bytes(desafio.token_hash),
             expected_origin=origem,
-            expected_rp_id=PASSKEY_RP_ID,
+            expected_rp_id=rp_id,
         )
     except InvalidRegistrationResponse as e:
         raise HTTPException(status_code=400, detail=f"Não foi possível validar a passkey: {str(e)}")
@@ -862,8 +936,10 @@ async def passkey_login_iniciar(
     if pessoa and pessoa.status_acesso == "ATIVO":
         credenciais = db.query(CredencialPasskey).filter(CredencialPasskey.pessoa_id == pessoa.id).all()
 
+    rp_id = _obter_rp_id_efetivo(http_request)
+
     opcoes = webauthn.generate_authentication_options(
-        rp_id=PASSKEY_RP_ID,
+        rp_id=rp_id,
         allow_credentials=[
             PublicKeyCredentialDescriptor(id=base64url_to_bytes(c.credential_id))
             for c in credenciais
@@ -904,6 +980,7 @@ async def passkey_login_iniciar(
 async def passkey_login_concluir(
     request: PasskeyLoginConcluirRequest,
     http_request: Request,
+    response: Response,
     db: Session = Depends(obter_banco_de_dados),
 ):
     ip_cliente = http_request.client.host if http_request.client else "desconhecido"
@@ -941,12 +1018,13 @@ async def passkey_login_concluir(
         raise erro_generico
 
     origem = _origem_passkey_autorizada(http_request)
+    rp_id = _obter_rp_id_efetivo(http_request)
 
     try:
         verificacao = webauthn.verify_authentication_response(
             credential=json.dumps(request.credential),
             expected_challenge=base64url_to_bytes(desafio.token_hash),
-            expected_rp_id=PASSKEY_RP_ID,
+            expected_rp_id=rp_id,
             expected_origin=origem,
             credential_public_key=base64url_to_bytes(credencial.public_key),
             credential_current_sign_count=credencial.sign_count,
@@ -962,7 +1040,7 @@ async def passkey_login_concluir(
     credencial.ultimo_uso_em = agora
     db.commit()
 
-    return _gerar_resposta_login(db, pessoa, request.modulo_origem)
+    return _gerar_resposta_login(db, pessoa, request.modulo_origem, response=response)
 
 
 @router.post(
@@ -1056,3 +1134,83 @@ def validar_token(
         ),
         modulos_ativos=modulos_ativos,
     )
+
+
+class SsoSessaoResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    usuario: UsuarioValidadoResponse
+    modulos_ativos: List[str]
+    deve_trocar_senha: bool
+
+
+@router.get(
+    "/sso/session",
+    response_model=SsoSessaoResponse,
+    summary="Restaura a sessão ativa via Cookie SSO multi-domínio",
+    description=(
+        "Permite que os frontends satélites (CoReVM, Lojas, Harmonia etc.) "
+        "recuperem a sessão ativa do usuário através do cookie HttpOnly 'sigma_sso_token', "
+        "viabilizando Single Sign-On (SSO) transparente entre subdomínios sem expor tokens."
+    ),
+    responses={
+        401: {"description": "Nenhuma sessão ativa ou credencial expirada."},
+    },
+)
+def obter_sessao_sso(
+    request: Request,
+    response: Response,
+    db: Session = Depends(obter_banco_de_dados),
+):
+    # 1. Tenta obter o token do cookie de SSO
+    token = request.cookies.get(SSO_COOKIE_NAME)
+
+    # 2. Fallback: Header Authorization Bearer
+    if not token:
+        auth_header = request.headers.get("authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+
+    if not token:
+        raise HTTPException(status_code=401, detail="Nenhuma sessão ativa encontrada.")
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except jwt.PyJWTError:
+        _remover_cookie_sso(response)
+        raise HTTPException(status_code=401, detail="Sessão expirada ou inválida.")
+
+    user_id = payload.get("user_id")
+    pessoa = db.query(Pessoa).filter(Pessoa.id == user_id).first() if user_id else None
+    if not pessoa or pessoa.status_acesso != "ATIVO":
+        _remover_cookie_sso(response)
+        raise HTTPException(status_code=401, detail="Usuário inativo ou inexistente.")
+
+    loja_id = payload.get("loja_id")
+    modulos_ativos = _obter_modulos_ativos(db, loja_id)
+
+    return SsoSessaoResponse(
+        access_token=token,
+        token_type="bearer",
+        usuario=UsuarioValidadoResponse(
+            email=payload.get("sub"),
+            user_id=user_id,
+            role=payload.get("role"),
+            organizacao_id=loja_id,
+            cim=pessoa.cim if pessoa else None,
+            cpf=pessoa.cpf if pessoa else None,
+        ),
+        modulos_ativos=modulos_ativos,
+        deve_trocar_senha=bool(pessoa.deve_trocar_senha),
+    )
+
+
+@router.post(
+    "/logout",
+    summary="Encerra a sessão global de SSO",
+    description="Remove o cookie de SSO multi-domínio em todos os subdomínios do ecossistema.",
+)
+def encerrar_sessao_sso(response: Response):
+    _remover_cookie_sso(response)
+    return {"mensagem": "Sessão encerrada com sucesso em todo o ecossistema."}
+
