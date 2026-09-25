@@ -4,6 +4,24 @@ Este documento atua como a **Regra de Ouro** de documentação histórica do Sig
 
 ---
 
+## [25 de Setembro de 2026] - Design System Soberano, Telas de Login Unificadas e Favicons Dourados
+**Módulo:** `Frontend SaaS` / `Design System Ecossistema` / `DevOps & CI/CD`
+
+### Identidade Visual & Design System
+- **Design System Soberano (Glassmorphism & Ouro Maçônico)**:
+  - Fundo Abissal (`#050508`) com partículas dinâmicas no Canvas (`HeroBackground`).
+  - Cards em Deep Blue Glass (`.card-deep-blue-glass`) com desfoque de fundo e bordas translúcidas em ouro.
+  - Botões no formato pill com aro chanfrado metálico em ouro (`.btn-masonic-pill .btn-pill-blue` e `.btn-pill-gold`).
+  - Tipografia de alto contraste alternando Branco Puro e gradientes em Ouro Maçônico (`#FDE68A` $\rightarrow$ `#DDB96B` $\rightarrow$ `#B8862D`).
+- **Padronização de Favicons e Logotipos**:
+  - Geração de favicons dourados em SVG e `favicon.ico` para todos os módulos (`e-sigma`, `Lojas`, `CoReVM`, `Harmonia`) com cache-busting `?v=3`.
+- **Telas de Login Unificadas (Clones Visuais do e-Sigma)**:
+  - Implementação da casca de login idêntica em todos os satélites (`Lojas`, `CoReVM`, `Harmonia`), preservando 100% de suas regras funcionais e alterando unicamente o logotipo oficial animado no topo do card.
+- **Deploy Automático na VPS (`srv854308`)**:
+  - Testado e validado em tempo real via GitHub Actions em todos os serviços (`https://e-sigma.app`, `https://lojas.e-sigma.app`, `https://core.e-sigma.app`, `https://harmonia.e-sigma.app`) respondendo `HTTP 200` com os novos bundles ativos.
+
+---
+
 ## [25 de Setembro de 2026] - Landing Page Pública, Hub do Cliente e Credenciais SuperAdmin
 **Módulo:** `Frontend SaaS` / `Launcher de Módulos & Suporte`
 
