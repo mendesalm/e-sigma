@@ -54,14 +54,8 @@ export const PaginaLogin: React.FC = () => {
         navigate('/select-lodge');
       } else if (user.role === 'super_admin') {
         navigate('/global');
-      } else if (user.role === 'webmaster') {
-        if (user.obedience_id) {
-          navigate('/central');
-        } else {
-          navigate('/local');
-        }
-      } else if (user.role === 'member') {
-        navigate('/local');
+      } else if (user.role === 'webmaster' || user.role === 'member') {
+        navigate('/cliente');
       } else {
         navigate('/');
       }
@@ -85,14 +79,8 @@ export const PaginaLogin: React.FC = () => {
         navigate('/select-lodge'); // Todo: Tela de seleção de associação
       } else if (user.role === 'super_admin') {
         navigate('/global');
-      } else if (user.role === 'webmaster') {
-        if (user.obedience_id) {
-          navigate('/central');
-        } else {
-          navigate('/local');
-        }
-      } else if (user.role === 'member') {
-        navigate('/local');
+      } else if (user.role === 'webmaster' || user.role === 'member') {
+        navigate('/cliente');
       } else {
         navigate('/');
       }

@@ -9,16 +9,21 @@ import {
   ListItemText, 
   Toolbar, 
   Typography, 
-  AppBar,
-  CssBaseline,
-  Divider,
-  Paper
+  AppBar, 
+  CssBaseline, 
+  Divider, 
+  Paper,
+  Button,
+  IconButton
 } from '@mui/material';
 import BusinessIcon from '@mui/icons-material/Business';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import StorageIcon from '@mui/icons-material/Storage';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import HandshakeIcon from '@mui/icons-material/Handshake';
+import { Logout as LogoutIcon, Launch as LaunchIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../compartilhado/contextos/AuthContext';
 
 import { GestaoLojas } from './componentes/GestaoLojas';
 import { GestaoObediencias } from './componentes/GestaoObediencias';
@@ -29,6 +34,13 @@ const drawerWidth = 260;
 
 export const DashboardGlobal: React.FC = () => {
   const [abaAtiva, setAbaAtiva] = useState(0);
+  const navigate = useNavigate();
+  const { logout, user } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   const menuItems = [
     { text: 'Lojas', icon: <BusinessIcon />, id: 0 },
@@ -51,13 +63,37 @@ export const DashboardGlobal: React.FC = () => {
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         boxShadow: 'none'
       }}>
-        <Toolbar>
+        <Toolbar sx={{ gap: 2 }}>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, color: '#00E5FF', fontWeight: 'bold', letterSpacing: 1 }}>
             Sigma 2.0 <Typography component="span" sx={{ color: 'rgba(255,255,255,0.5)' }}>| Painel Sistêmico Global</Typography>
           </Typography>
+
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<LaunchIcon />}
+            onClick={() => navigate('/cliente')}
+            sx={{
+              color: '#00E5FF',
+              borderColor: 'rgba(0, 229, 255, 0.4)',
+              borderRadius: 2,
+              textTransform: 'none',
+              '&:hover': {
+                borderColor: '#00E5FF',
+                backgroundColor: 'rgba(0, 229, 255, 0.1)'
+              }
+            }}
+          >
+            Hub do Cliente
+          </Button>
+
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', backgroundColor: 'rgba(0,0,0,0.2)', px: 2, py: 0.5, borderRadius: 4, border: '1px solid rgba(255,255,255,0.1)' }}>
-            sistema@e-sigma.app
+            {user?.sub || 'sistema@e-sigma.app'}
           </Typography>
+
+          <IconButton onClick={handleLogout} color="error" size="small" title="Sair do Sistema">
+            <LogoutIcon fontSize="small" />
+          </IconButton>
         </Toolbar>
       </AppBar>
 

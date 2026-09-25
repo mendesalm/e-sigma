@@ -12,9 +12,11 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
-  // test: {
-  //   globals: true,
-  //   environment: 'jsdom',
-  //   setupFiles: './src/compartilhado/testes/setupTests.ts',
-  // },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/compartilhado/testes/setupTests.ts',
+    exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
+  },
 })
+

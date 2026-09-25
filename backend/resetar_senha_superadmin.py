@@ -21,7 +21,7 @@ from database import SessaoLocal
 from models import Pessoa
 
 EMAIL_ADMIN = "sistema@e-sigma.app"
-NOVA_SENHA = "Ceres@2026Teste!"  # troque aqui se quiser outro valor antes de rodar
+NOVA_SENHA = "Cd@ESig#01"  # Senha oficial do SuperAdmin
 
 def main():
     db = SessaoLocal()

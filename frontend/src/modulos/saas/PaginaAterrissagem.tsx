@@ -422,8 +422,7 @@ export const PaginaAterrissagem: React.FC = () => {
           <Grid 
             container 
             spacing={{ xs: 3, md: 4 }} 
-            alignItems="stretch" 
-            sx={{ flexWrap: { xs: 'wrap', md: 'nowrap' } }}
+            sx={{ flexWrap: { xs: 'wrap', md: 'nowrap' }, alignItems: 'stretch' }}
           >
             <Grid size={{ xs: 12, md: 6 }} sx={{ flex: { md: 1 }, minWidth: { md: 0 } }}>
               <Paper sx={{ ...glassStyle, p: 5 }}>
@@ -471,8 +470,7 @@ export const PaginaAterrissagem: React.FC = () => {
           <Grid 
             container 
             spacing={{ xs: 3, md: 4 }} 
-            alignItems="stretch" 
-            sx={{ flexWrap: { xs: 'wrap', md: 'nowrap' } }}
+            sx={{ flexWrap: { xs: 'wrap', md: 'nowrap' }, alignItems: 'stretch' }}
           >
             
             {/* PLANO BÁSICO */}

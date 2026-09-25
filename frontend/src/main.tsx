@@ -1,8 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ThemeProvider } from '@mui/material/styles'
+import { CustomThemeProvider } from './compartilhado/contextos/ThemeContext'
 import CssBaseline from '@mui/material/CssBaseline'
-import temaMui from './compartilhado/tema/tema_mui'
 import { SnackbarProvider } from 'notistack'
 import { AuthProvider } from './compartilhado/contextos/AuthContext'
 import { GoogleOAuthProvider } from '@react-oauth/google'
@@ -14,11 +13,11 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'COLOQUE_SEU_C
 
 /**
  * Ponto de entrada (Entrypoint) do Frontend React.
- * Aqui injetamos o Design System (Material UI) globalmente com o Tema Escuro (Dark Navy).
+ * Utiliza o CustomThemeProvider para suporte completo a Dark/Light mode com persistência local.
  */
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider theme={temaMui}>
+    <CustomThemeProvider>
       <CssBaseline />
       <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
         <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
@@ -27,6 +26,7 @@ createRoot(document.getElementById('root')!).render(
           </AuthProvider>
         </GoogleOAuthProvider>
       </SnackbarProvider>
-    </ThemeProvider>
+    </CustomThemeProvider>
   </StrictMode>,
 )
+

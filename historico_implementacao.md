@@ -4,6 +4,18 @@ Este documento atua como a **Regra de Ouro** de documentação histórica do Sig
 
 ---
 
+## [25 de Setembro de 2026] - Landing Page Pública, Hub do Cliente e Credenciais SuperAdmin
+**Módulo:** `Frontend SaaS` / `Launcher de Módulos & Suporte`
+
+### Interfaces & Experiência do Usuário
+- **Landing Page Pública Oficial (`PaginaAterrissagem.tsx`)**: Clone estrito do frontend legado Sigma com carrossel responsivo com suporte a drag-and-drop e auto-scroll, seções de recursos, planos e assinaturas com formulário de solicitação, e selo animado.
+- **Suporte Dinâmico a Dark/Light Mode (`ThemeContext.tsx`)**: Implementado chaveador com persistência em `localStorage` e integração visual no `Cabecalho.tsx`.
+- **Hub do Cliente & Launcher de Módulos (`DashboardCliente.tsx`)**: Painel de controle do cliente e-Sigma com lançadores para os satélites (CoReVM, Lojas, Harmonia), dados de faturamento e infraestrutura, e canal completo para reporte de bugs e envio de sugestões.
+- **Painel SuperAdmin (`DashboardGlobal.tsx`)**: Gestão de Lojas, Obediências, Ativação SaaS, Custos e Administradores com chaveamento bidirecional para o Hub do Cliente.
+- **Credenciais SuperAdmin**: Hash da senha de `sistema@e-sigma.app` corrigido no PostgreSQL para a senha padrão oficial `Cd@ESig#01`.
+
+---
+
 ## [24 de Setembro de 2026] - SSO Multi-Domínio e Sessão Unificada
 **Módulo:** `Identidade Centralizada` / `Autenticação & SSO`
 

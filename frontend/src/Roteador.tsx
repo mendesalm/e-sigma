@@ -7,11 +7,12 @@ import { PaginaLogin } from './modulos/saas/PaginaLogin';
 import { DashboardGlobal } from './modulos/painel_global/DashboardGlobal';
 import { DashboardCentral } from './modulos/painel_central/DashboardCentral';
 import { DashboardLocal } from './modulos/painel_local/DashboardLocal';
+import { DashboardCliente } from './modulos/painel_cliente/DashboardCliente';
 import { RotaPrivada } from './compartilhado/contextos/RotaPrivada';
 
 /**
  * Roteador Principal da Aplicação Sigma 2.0.
- * Gerencia a navegação entre a Landing Page Comercial e os 3 Níveis de Painel (SaaS).
+ * Gerencia a navegação entre a Landing Page Comercial, Hub do Cliente e Painéis Administrativos.
  */
 export const Roteador: React.FC = () => {
   return (
@@ -22,6 +23,14 @@ export const Roteador: React.FC = () => {
         
         {/* Rota de Autenticação Única */}
         <Route path="/login" element={<PaginaLogin />} />
+
+        {/* Hub do Cliente e Lançador de Módulos Satélite */}
+        <Route path="/cliente" element={
+          <RotaPrivada allowedRoles={['super_admin', 'webmaster', 'member']}>
+            <DashboardCliente />
+          </RotaPrivada>
+        } />
+        <Route path="/hub" element={<Navigate to="/cliente" replace />} />
         
         {/* Fatias Verticais (Dashboards Multi-Tenant protegidos) */}
         <Route path="/global" element={
@@ -36,9 +45,10 @@ export const Roteador: React.FC = () => {
         } />
         <Route path="/local" element={
           <RotaPrivada allowedRoles={['super_admin', 'webmaster', 'member']}>
-            <DashboardLocal />
+            <DashboardCliente />
           </RotaPrivada>
         } />
+
         
         {/* Fallback para rotas inexistentes (404) */}
         <Route path="*" element={

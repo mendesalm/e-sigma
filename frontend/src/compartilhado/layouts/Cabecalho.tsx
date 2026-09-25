@@ -13,14 +13,13 @@ import {
   Switch
 } from "@mui/material";
 import { Brightness4, Brightness7 } from "@mui/icons-material";
-
+import { useCustomTheme } from '../contextos/ThemeContext';
 import { LogoAnimadaSigma } from '../componentes/LogoAnimadaSigma';
 
 export const Cabecalho: React.FC = () => {
   const location = useLocation();
   const theme = useTheme();
-  const mode = theme.palette.mode;
-  const toggleColorMode = () => {}; // TODO: Implement theme toggle
+  const { mode, toggleColorMode } = useCustomTheme();
   const isLoginPage = location.pathname === "/login";
   
   // State to track scroll position for styling
