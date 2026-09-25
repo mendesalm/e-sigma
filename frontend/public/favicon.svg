@@ -1,19 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="500 5500 21000 18000" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; fill-rule:nonzero;">
   <defs>
     <linearGradient id="sigmaFavGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38BDF8" />
-      <stop offset="45%" stop-color="#0284C7" />
-      <stop offset="85%" stop-color="#0369A1" />
-      <stop offset="100%" stop-color="#075985" />
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="35%" stop-color="#DDB96B" />
+      <stop offset="70%" stop-color="#B8862D" />
+      <stop offset="100%" stop-color="#785012" />
     </linearGradient>
     <linearGradient id="sigmaFavCenter" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FDE68A" />
-      <stop offset="50%" stop-color="#DDB96B" />
-      <stop offset="100%" stop-color="#B8862D" />
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="40%" stop-color="#FFF3C4" />
+      <stop offset="80%" stop-color="#F1D17E" />
+      <stop offset="100%" stop-color="#DDB96B" />
     </linearGradient>
     <filter id="sigmaFavGlow" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur stdDeviation="150" result="blur" />
-      <feFlood flood-color="#38BDF8" flood-opacity="0.4" result="glowColor" />
+      <feFlood flood-color="#DDB96B" flood-opacity="0.4" result="glowColor" />
       <feComposite in="glowColor" in2="blur" operator="in" result="softGlow" />
       <feMerge>
         <feMergeNode in="softGlow" />

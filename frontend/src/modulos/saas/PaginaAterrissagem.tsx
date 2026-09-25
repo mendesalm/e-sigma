@@ -191,8 +191,8 @@ export const PaginaAterrissagem: React.FC = () => {
       <SectionContainer id="hero-section">
         <FundoHero />
         <Box sx={{ textAlign: 'center', width: '100%', maxWidth: '1200px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Box id="hero-logo" sx={{ mt: 5, filter: 'drop-shadow(0 0 30px rgba(0,176,255,0.4))', display: 'flex', justifyContent: 'center' }}>
-            <LogoAnimadaSigma theme="cyber" width={220} height={220} showText={false} animated={false} />
+          <Box id="hero-logo" sx={{ mt: 5, filter: 'drop-shadow(0 0 30px rgba(221, 185, 107, 0.4))', display: 'flex', justifyContent: 'center' }}>
+            <LogoAnimadaSigma theme="ouro" width={220} height={220} showText={false} animated={false} />
           </Box>
           <Box sx={{ mt: 3, mb: 5 }}>
               <Typography

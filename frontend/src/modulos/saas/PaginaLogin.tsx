@@ -137,7 +137,7 @@ export const PaginaLogin: React.FC = () => {
           }}
         >
           <Box sx={{ mb: 1, mt: 1, display: 'flex', justifyContent: 'center' }}>
-            <LogoAnimadaSigma theme="cyber" width={100} height={100} showText={false} />
+            <LogoAnimadaSigma theme="ouro" width={100} height={100} showText={false} />
           </Box>
           <Typography 
             component="h1" 
@@ -146,7 +146,7 @@ export const PaginaLogin: React.FC = () => {
               mb: 1, 
               fontWeight: 700, 
               fontFamily: "'Tektur', sans-serif",
-              background: (theme) => theme.palette.mode === 'dark' ? 'linear-gradient(to right, #38bdf8, #0284c7)' : 'linear-gradient(to right, #0284c7, #0369a1)',
+              background: 'linear-gradient(135deg, #FDE68A 0%, #DDB96B 50%, #B8862D 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               filter: (theme) => theme.palette.mode === 'dark' ? 'drop-shadow(0 0 10px rgba(56, 189, 248, 0.3))' : 'none'

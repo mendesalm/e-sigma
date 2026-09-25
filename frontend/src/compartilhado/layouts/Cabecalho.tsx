@@ -124,11 +124,11 @@ export const Cabecalho: React.FC = () => {
                   transition: "transform 0.3s ease",
                   "&:hover": {
                     transform: "scale(1.05)",
-                    filter: theme.palette.mode === 'dark' ? "drop-shadow(0px 0px 12px rgba(56, 189, 248, 0.5))" : "drop-shadow(0px 0px 12px rgba(2, 132, 199, 0.5))",
+                    filter: "drop-shadow(0px 0px 12px rgba(221, 185, 107, 0.6))",
                   }
                 }}
               >
-                <LogoAnimadaSigma theme="cyber" width="100%" height="100%" showText={false} animated={false} />
+                <LogoAnimadaSigma theme="ouro" width="100%" height="100%" showText={false} animated={false} />
               </Box>
               <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                 <Typography 

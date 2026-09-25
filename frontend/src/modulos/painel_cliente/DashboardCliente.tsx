@@ -189,7 +189,7 @@ export const DashboardCliente: React.FC = () => {
           {/* Logo e Título */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <LogoAnimadaSigma theme="cyber" width="100%" height="100%" showText={false} animated={false} />
+              <LogoAnimadaSigma theme="ouro" width="100%" height="100%" showText={false} animated={false} />
             </Box>
             <Box>
               <Typography variant="h6" sx={{ fontFamily: "'Tektur', sans-serif", fontWeight: 700, lineHeight: 1.1, color: 'primary.main' }}>
