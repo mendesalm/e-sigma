@@ -123,16 +123,12 @@ export const PaginaLogin: React.FC = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
+          className="card-deep-blue-glass"
           sx={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(19, 27, 41, 0.4)' : 'rgba(255, 255, 255, 0.6)', 
-            backdropFilter: 'blur(20px)', 
-            border: (theme) => theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)', 
             p: { xs: 4, md: 6 },
-            borderRadius: 4,
-            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)', 
             width: '100%',
           }}
         >
@@ -228,15 +224,11 @@ export const PaginaLogin: React.FC = () => {
               fullWidth
               variant="contained"
               disabled={isLoading}
+              className="btn-masonic-pill btn-pill-blue"
               sx={{ 
                 py: 1.5, 
                 mb: 3, 
                 fontSize: '1rem', 
-                borderRadius: 2,
-                boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 4px 14px 0 rgba(56, 189, 248, 0.39)' : '0 4px 14px 0 rgba(2, 132, 199, 0.39)',
-                '&:hover': {
-                  boxShadow: (theme) => theme.palette.mode === 'dark' ? '0 6px 20px rgba(56, 189, 248, 0.23)' : '0 6px 20px rgba(2, 132, 199, 0.23)'
-                }
               }}
             >
               {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Entrar'}

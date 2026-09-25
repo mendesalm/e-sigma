@@ -8,44 +8,44 @@ const temaMui = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#00B0FF', // Ciano Brilhante (Cor Primária)
-      light: '#33BFFF',
-      dark: '#007BB2',
-      contrastText: '#ffffff',
+      main: '#DDB96B', // Ouro Maçônico Canônico
+      light: '#FDE68A',
+      dark: '#B8862D',
+      contrastText: '#070B12',
     },
     secondary: {
-      main: '#f50057', // Rosa/Vermelho para ações destrutivas ou de destaque
-      light: '#ff4081',
-      dark: '#c51162',
-      contrastText: '#ffffff',
+      main: '#FDE68A',
+      light: '#FFF3C4',
+      dark: '#B8862D',
+      contrastText: '#070B12',
     },
     background: {
-      default: '#0b111b', // Azul Marinho Profundo (Fundo principal)
-      paper: '#131b29', // Fundo dos cards e painéis
+      default: '#050508', // Fundo Preto Abissal
+      paper: '#0d1b35', // Deep Blue
     },
     text: {
-      primary: '#e0e0e0', // Cinza claro (Texto Principal)
-      secondary: '#a0a0a0', // Cinza mudo (Texto Secundário)
+      primary: '#ffffff', // Branco Puro
+      secondary: '#CBD5E1', // Branco Gelo
     },
-    divider: 'rgba(255, 255, 255, 0.08)',
+    divider: 'rgba(221, 185, 107, 0.2)',
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h1: { fontWeight: 600, color: '#e0e0e0' },
-    h2: { fontWeight: 600, color: '#e0e0e0' },
-    h3: { fontWeight: 600, color: '#e0e0e0' },
-    h4: { fontWeight: 600, color: '#e0e0e0' },
-    h5: { fontWeight: 600, color: '#e0e0e0' },
-    h6: { fontWeight: 600, color: '#e0e0e0' },
-    body1: { color: '#e0e0e0' },
-    body2: { color: '#a0a0a0' },
+    fontFamily: '"Inter", "Tektur", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: { fontWeight: 700, color: '#FDE68A' },
+    h2: { fontWeight: 700, color: '#FDE68A' },
+    h3: { fontWeight: 600, color: '#FFFFFF' },
+    h4: { fontWeight: 600, color: '#FDE68A' },
+    h5: { fontWeight: 600, color: '#FFFFFF' },
+    h6: { fontWeight: 600, color: '#DDB96B' },
+    body1: { color: '#ffffff' },
+    body2: { color: '#CBD5E1' },
   },
   components: {
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: '#0b111b',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          backgroundColor: '#070e1c',
+          borderBottom: '1px solid rgba(221, 185, 107, 0.2)',
           boxShadow: 'none',
           borderRadius: 0,
         },
@@ -54,8 +54,8 @@ const temaMui = createTheme({
     MuiDrawer: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#0b111b',
-          borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+          backgroundColor: '#070e1c',
+          borderRight: '1px solid rgba(221, 185, 107, 0.2)',
           borderRadius: 0,
         },
       },
