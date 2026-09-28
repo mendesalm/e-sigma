@@ -3,7 +3,7 @@ import {
   Box, Typography, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, Chip, Button 
 } from '@mui/material';
-import axios from 'axios';
+import { api } from '../../../compartilhado/api/cliente_http';
 
 interface TratadoAmizade {
   id: string;
@@ -18,7 +18,7 @@ export const GestaoTratados: React.FC = () => {
 
   const fetchTratados = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/saas/tratados`);
+      const response = await api.get('/saas/tratados');
       setTratados(response.data);
     } catch (error) {
       console.error("Erro ao buscar tratados:", error);

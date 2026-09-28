@@ -4,7 +4,7 @@ import {
   Typography, Box, Table, TableBody, TableCell, TableHead, TableRow,
   TableContainer, Paper, Chip
 } from '@mui/material';
-import axios from 'axios';
+import { api } from '../../../compartilhado/api/cliente_http';
 
 interface Props {
   aberto: boolean;
@@ -26,7 +26,7 @@ export const ModalImportacaoMassa: React.FC<Props> = ({ aberto, fechar, onSucces
     formData.append('arquivo', arquivo);
 
     try {
-      const resp = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/organizacoes/importar/preview`, formData, {
+      const resp = await api.post('/organizacoes/importar/preview', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setResultados(resp.data.resultados);
@@ -50,7 +50,7 @@ export const ModalImportacaoMassa: React.FC<Props> = ({ aberto, fechar, onSucces
     }
 
     try {
-      const resp = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/organizacoes/importar/confirmar`, { itens: itensValidos });
+      const resp = await api.post('/organizacoes/importar/confirmar', { itens: itensValidos });
       setMensagemGlobal(resp.data.mensagem);
       setFase('CONCLUIDO');
       onSuccess();

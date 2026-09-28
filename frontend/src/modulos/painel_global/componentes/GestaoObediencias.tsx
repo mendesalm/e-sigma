@@ -4,7 +4,7 @@ import {
   TableContainer, TableHead, TableRow, Chip, Button, TextField,
   Tabs, Tab, Grid, FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
-import axios from 'axios';
+import { api } from '../../../compartilhado/api/cliente_http';
 
 interface Organizacao {
   id: string;
@@ -29,7 +29,7 @@ export const GestaoObediencias: React.FC = () => {
 
   const fetchOrganizacoes = async () => {
     try {
-      const resp = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/organizacoes/?limite=5000`);
+      const resp = await api.get('/organizacoes/?limite=5000');
       setOrganizacoes(resp.data);
     } catch (error) {
       console.error("Erro ao buscar obediências:", error);

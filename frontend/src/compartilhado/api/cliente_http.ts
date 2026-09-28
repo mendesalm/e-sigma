@@ -1,11 +1,12 @@
 import axios from 'axios';
+import { obterUrlEsigmaApi } from '../servicos/configuracaoAmbiente';
 
 /**
  * Cliente HTTP Global (Axios) para a Aplicação.
  * Centraliza as requisições para a API do Sigma 2.0 (FastAPI).
  */
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
+  baseURL: obterUrlEsigmaApi(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

@@ -3,7 +3,7 @@ import {
   Box, Typography, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, Chip, Button 
 } from '@mui/material';
-import axios from 'axios';
+import { api } from '../../../compartilhado/api/cliente_http';
 
 interface PlanoSaaS {
   id: string;
@@ -17,7 +17,7 @@ export const GestaoAssinaturas: React.FC = () => {
 
   const fetchPlanos = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/saas/planos`);
+      const response = await api.get('/saas/planos');
       setPlanos(response.data);
     } catch (error) {
       console.error("Erro ao buscar planos:", error);

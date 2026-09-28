@@ -50,13 +50,7 @@ import { useAuth } from '../../compartilhado/contextos/AuthContext';
 import { useCustomTheme } from '../../compartilhado/contextos/ThemeContext';
 import { LogoAnimadaSigma } from '../../compartilhado/componentes/LogoAnimadaSigma';
 import { useSnackbar } from 'notistack';
-
-// URLs dos módulos satélite para desenvolvimento e produção
-const URLS_SATELITES = {
-  corevm: import.meta.env.VITE_COREVM_URL || 'http://localhost:5174',
-  lojas: import.meta.env.VITE_LOJAS_URL || 'http://localhost:5175',
-  harmonia: import.meta.env.VITE_HARMONIA_URL || 'http://localhost:5178',
-};
+import { URLS_SATELITES } from '../../compartilhado/servicos/configuracaoAmbiente';
 
 interface ChamadoBug {
   id: string;
@@ -120,7 +114,13 @@ export const DashboardCliente: React.FC = () => {
 
   const handleAbrirModulo = (url: string, nomeModulo: string) => {
     enqueueSnackbar(`Direcionando para o módulo ${nomeModulo} com Single Sign-On...`, { variant: 'info' });
-    window.open(url, '_blank', 'noopener,noreferrer');
+    const token = localStorage.getItem('token');
+    let urlFinal = url;
+    if (token) {
+      const separador = url.includes('?') ? '&' : '?';
+      urlFinal = `${url}${separador}sso_token=${encodeURIComponent(token)}`;
+    }
+    window.open(urlFinal, '_blank', 'noopener,noreferrer');
   };
 
   const handleSubmeterBug = (e: React.FormEvent) => {

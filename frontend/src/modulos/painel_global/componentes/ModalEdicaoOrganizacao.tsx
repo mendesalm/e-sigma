@@ -4,7 +4,7 @@ import {
   Grid, Typography, Box, Chip, Button, TextField, 
   Tabs, Tab, Select, MenuItem, FormControl, InputLabel
 } from '@mui/material';
-import axios from 'axios';
+import { api } from '../../../compartilhado/api/cliente_http';
 
 interface ModalEdicaoOrganizacaoProps {
   open: boolean;
@@ -94,9 +94,9 @@ export const ModalEdicaoOrganizacao: React.FC<ModalEdicaoOrganizacaoProps> = ({ 
       };
 
       if (org.id === 'novo') {
-        await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/organizacoes/`, payload);
+        await api.post('/organizacoes/', payload);
       } else {
-        await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/organizacoes/${org.id}`, payload);
+        await api.patch(`/organizacoes/${org.id}`, payload);
       }
       onSaveSuccess();
       onClose();
@@ -112,7 +112,7 @@ export const ModalEdicaoOrganizacao: React.FC<ModalEdicaoOrganizacaoProps> = ({ 
     if (!window.confirm("Você será redirecionado para o Stripe para assinar o plano. Deseja continuar?")) return;
     setLoading(true);
     try {
-      const resp = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/saas/checkout/${org.id}`);
+      const resp = await api.post(`/saas/checkout/${org.id}`);
       if (resp.data.url) {
         window.location.href = resp.data.url;
       }
