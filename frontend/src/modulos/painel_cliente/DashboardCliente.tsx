@@ -116,12 +116,26 @@ export const DashboardCliente: React.FC = () => {
   };
 
   const handleAbrirModulo = (url: string, nomeModulo: string) => {
+    let urlDestino = url;
+    
+    // Dupla blindagem defensiva: se estivermos em ambiente web de produção (e-sigma.app ou IP público),
+    // intercepta e substitui qualquer resíduo acidental de localhost pelos domínios HTTPS reais
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      if (urlDestino.includes('localhost:5174') || urlDestino.includes('127.0.0.1:5174')) {
+        urlDestino = 'https://core.e-sigma.app';
+      } else if (urlDestino.includes('localhost:5175') || urlDestino.includes('127.0.0.1:5175')) {
+        urlDestino = 'https://lojas.e-sigma.app';
+      } else if (urlDestino.includes('localhost:5178') || urlDestino.includes('127.0.0.1:5178')) {
+        urlDestino = 'https://harmonia.e-sigma.app';
+      }
+    }
+
     enqueueSnackbar(`Direcionando para o módulo ${nomeModulo} com Single Sign-On...`, { variant: 'info' });
     const token = localStorage.getItem('token');
-    let urlFinal = url;
+    let urlFinal = urlDestino;
     if (token) {
-      const separador = url.includes('?') ? '&' : '?';
-      urlFinal = `${url}${separador}sso_token=${encodeURIComponent(token)}`;
+      const separador = urlDestino.includes('?') ? '&' : '?';
+      urlFinal = `${urlDestino}${separador}sso_token=${encodeURIComponent(token)}`;
     }
     window.open(urlFinal, '_blank', 'noopener,noreferrer');
   };

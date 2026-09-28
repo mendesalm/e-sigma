@@ -1,5 +1,5 @@
 // Service Worker PWA para e-Sigma
-const CACHE_NAME = 'esigma-pwa-cache-v1';
+const CACHE_NAME = 'esigma-pwa-cache-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
