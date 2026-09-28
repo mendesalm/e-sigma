@@ -248,7 +248,7 @@ export const PaginaLogin: React.FC = () => {
                 }}
                 theme={document.body.style.backgroundColor === '#0b111b' ? 'filled_black' : 'outline'}
                 text="continue_with"
-                width="100%"
+                width="380"
               />
             </Box>
             
