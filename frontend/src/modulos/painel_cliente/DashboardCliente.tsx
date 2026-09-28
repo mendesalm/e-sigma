@@ -43,11 +43,13 @@ import {
   Brightness7,
   Speed,
   CloudDone,
-  Send
+  Send,
+  GetApp as GetAppIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../compartilhado/contextos/AuthContext';
 import { useCustomTheme } from '../../compartilhado/contextos/ThemeContext';
+import { usePwaInstall } from '../../compartilhado/hooks/usePwaInstall';
 import { LogoAnimadaSigma } from '../../compartilhado/componentes/LogoAnimadaSigma';
 import { useSnackbar } from 'notistack';
 import { URLS_SATELITES } from '../../compartilhado/servicos/configuracaoAmbiente';
@@ -62,6 +64,7 @@ interface ChamadoBug {
 }
 
 export const DashboardCliente: React.FC = () => {
+  const { podeInstalar, dispararInstalacao } = usePwaInstall();
   const theme = useTheme();
   const { mode, toggleColorMode } = useCustomTheme();
   const { user, logout } = useAuth();
@@ -214,6 +217,25 @@ export const DashboardCliente: React.FC = () => {
               >
                 Painel SuperAdmin
               </Button>
+            )}
+
+            {/* Botão de Instalação PWA */}
+            {podeInstalar && (
+              <Chip
+                icon={<GetAppIcon sx={{ fontSize: '15px !important' }} />}
+                label="Instalar App"
+                size="small"
+                onClick={dispararInstalacao}
+                sx={{
+                  bgcolor: (t) => t.palette.mode === 'dark' ? 'rgba(212, 175, 55, 0.2)' : 'rgba(212, 175, 55, 0.3)',
+                  color: mode === 'dark' ? '#D4AF37' : '#B8860B',
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                  border: '1px solid rgba(212, 175, 55, 0.4)',
+                  cursor: 'pointer',
+                  '&:hover': { bgcolor: 'rgba(212, 175, 55, 0.4)' },
+                }}
+              />
             )}
 
             {/* Alternador de Tema */}
