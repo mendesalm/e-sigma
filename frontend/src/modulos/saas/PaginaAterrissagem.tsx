@@ -24,9 +24,9 @@ const SectionContainer: React.FC<{ children: React.ReactNode, id?: string }> = (
   <Box
     id={id}
     sx={{
-      minHeight: '100vh',
+      minHeight: { xs: 'auto', md: '100dvh' },
       width: '100%',
-      scrollSnapAlign: 'start',
+      scrollSnapAlign: { xs: 'none', md: 'start' },
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -34,9 +34,9 @@ const SectionContainer: React.FC<{ children: React.ReactNode, id?: string }> = (
       position: 'relative',
       overflow: 'hidden',
       zIndex: 1,
-      px: { xs: 2, md: 8 },
-      pt: { xs: '80px', md: '100px' },
-      pb: 4
+      px: { xs: 2, sm: 4, md: 8 },
+      pt: { xs: '84px', sm: '96px', md: '108px' },
+      pb: { xs: 6, md: 4 }
     }}
   >
     {children}
@@ -157,10 +157,10 @@ export const PaginaAterrissagem: React.FC = () => {
         sx={{
         position: 'relative',
         width: '100%',
-        height: '100vh',
+        height: { xs: '100dvh', md: '100vh' },
         overflowY: 'auto',
         overflowX: 'hidden',
-        scrollSnapType: 'y mandatory',
+        scrollSnapType: { xs: 'none', md: 'y mandatory' },
         scrollBehavior: 'smooth',
         m: 0,
         p: 0,
@@ -191,16 +191,26 @@ export const PaginaAterrissagem: React.FC = () => {
       <SectionContainer id="hero-section">
         <FundoHero />
         <Box sx={{ textAlign: 'center', width: '100%', maxWidth: '1200px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Box id="hero-logo" sx={{ mt: 5, filter: 'drop-shadow(0 0 30px rgba(221, 185, 107, 0.4))', display: 'flex', justifyContent: 'center' }}>
-            <LogoAnimadaSigma theme="ouro" width={220} height={220} showText={false} animated={false} />
+          <Box 
+            id="hero-logo" 
+            sx={{ 
+              mt: { xs: 1, sm: 3, md: 5 }, 
+              filter: 'drop-shadow(0 0 30px rgba(221, 185, 107, 0.4))', 
+              display: 'flex', 
+              justifyContent: 'center',
+              width: { xs: 130, sm: 170, md: 220 },
+              height: { xs: 130, sm: 170, md: 220 }
+            }}
+          >
+            <LogoAnimadaSigma theme="ouro" width="100%" height="100%" showText={false} animated={false} />
           </Box>
-          <Box sx={{ mt: 3, mb: 5 }}>
+          <Box sx={{ mt: { xs: 2, sm: 3 }, mb: { xs: 3, sm: 5 } }}>
               <Typography
                 variant="h1"
                 sx={{
                   fontFamily: "'Tektur', sans-serif",
                   fontWeight: 600,
-                  fontSize: { xs: '28px', sm: '38px', md: '50px' },
+                  fontSize: { xs: '22px', sm: '36px', md: '50px' },
                   background: theme.palette.mode === 'dark' 
                     ? 'linear-gradient(to bottom, #e0f2fe 0%, #38bdf8 50%, #082f49 100%)'
                     : 'linear-gradient(to bottom, #0f172a 0%, #0284c7 60%, #0ea5e9 100%)',
