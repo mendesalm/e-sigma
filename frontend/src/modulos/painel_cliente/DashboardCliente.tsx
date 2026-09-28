@@ -117,16 +117,23 @@ export const DashboardCliente: React.FC = () => {
 
   const handleAbrirModulo = (url: string, nomeModulo: string) => {
     let urlDestino = url;
-    
-    // Dupla blindagem defensiva: se estivermos em ambiente web de produção (e-sigma.app ou IP público),
-    // intercepta e substitui qualquer resíduo acidental de localhost pelos domínios HTTPS reais
-    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      if (urlDestino.includes('localhost:5174') || urlDestino.includes('127.0.0.1:5174')) {
-        urlDestino = 'https://core.e-sigma.app';
-      } else if (urlDestino.includes('localhost:5175') || urlDestino.includes('127.0.0.1:5175')) {
-        urlDestino = 'https://lojas.e-sigma.app';
-      } else if (urlDestino.includes('localhost:5178') || urlDestino.includes('127.0.0.1:5178')) {
-        urlDestino = 'https://harmonia.e-sigma.app';
+    const usarSatelitesLocais = import.meta.env.VITE_USAR_SATELITES_LOCAIS === 'true';
+
+    // Blindagem categórica: a menos que explicitamente configurado para desenvolvimento local,
+    // substitui qualquer resíduo de localhost/127.0.0.1 pelos domínios oficiais na nuvem
+    if (!usarSatelitesLocais) {
+      if (urlDestino.includes('5174') || urlDestino.includes('corevm') || nomeModulo.toLowerCase().includes('core')) {
+        if (urlDestino.includes('localhost') || urlDestino.includes('127.0.0.1')) {
+          urlDestino = 'https://core.e-sigma.app';
+        }
+      } else if (urlDestino.includes('5175') || urlDestino.includes('lojas') || nomeModulo.toLowerCase().includes('loja')) {
+        if (urlDestino.includes('localhost') || urlDestino.includes('127.0.0.1')) {
+          urlDestino = 'https://lojas.e-sigma.app';
+        }
+      } else if (urlDestino.includes('5178') || urlDestino.includes('harmonia') || nomeModulo.toLowerCase().includes('harmonia')) {
+        if (urlDestino.includes('localhost') || urlDestino.includes('127.0.0.1')) {
+          urlDestino = 'https://harmonia.e-sigma.app';
+        }
       }
     }
 
