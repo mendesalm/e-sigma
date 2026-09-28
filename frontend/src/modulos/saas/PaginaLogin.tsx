@@ -23,6 +23,7 @@ import HeroBackground from './componentes/HeroBackground';
 
 import { GoogleLogin } from '@react-oauth/google';
 import type { CredentialResponse } from '@react-oauth/google';
+import { feedbackTatil } from '../../compartilhado/utilitarios/dispositivoNativo';
 
 const AnimatedBox = motion.create(Box);
 
@@ -69,10 +70,12 @@ export const PaginaLogin: React.FC = () => {
 
   const handleFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    feedbackTatil.clique();
     setIsLoading(true);
 
     try {
       const user = await login(email, password);
+      feedbackTatil.sucesso();
       
       // Regra de Negócio: Rotas baseadas no JWT Payload
       if (user.requires_selection) {
@@ -85,6 +88,7 @@ export const PaginaLogin: React.FC = () => {
         navigate('/');
       }
     } catch (err: any) {
+      feedbackTatil.erro();
       const errorMessage = err.response?.data?.message || err.response?.data?.detail || err.response?.data?.errors?.[0]?.msg || 'Falha no login. Verifique suas credenciais.';
       enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
