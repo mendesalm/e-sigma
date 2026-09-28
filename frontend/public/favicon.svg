@@ -1,5 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="500 5500 21000 18000" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; fill-rule:nonzero;">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="-5000 -900 32000 32000" width="512" height="512" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; fill-rule:nonzero;">
   <defs>
+    <!-- Fundo Azul Profundo Maçônico -->
+    <radialGradient id="sigmaBgAzulProfundo" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0f2244" />
+      <stop offset="65%" stop-color="#070e1c" />
+      <stop offset="100%" stop-color="#040812" />
+    </radialGradient>
     <linearGradient id="sigmaFavGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FDE68A" />
       <stop offset="35%" stop-color="#DDB96B" />
@@ -22,6 +28,9 @@
       </feMerge>
     </filter>
   </defs>
+
+  <!-- Fundo Azul Profundo para PWA Maskable e Standalone -->
+  <rect x="-5000" y="-900" width="32000" height="32000" fill="url(#sigmaBgAzulProfundo)" />
 
   <g>
     <!-- Arcos e Geometria Externa -->

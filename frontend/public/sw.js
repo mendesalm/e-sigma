@@ -1,9 +1,11 @@
 // Service Worker PWA para e-Sigma
-const CACHE_NAME = 'esigma-pwa-cache-v3';
+const CACHE_NAME = 'esigma-pwa-cache-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/favicon.svg',
+  '/icon-192.png',
+  '/icon-512.png',
   '/manifest.json'
 ];
 
